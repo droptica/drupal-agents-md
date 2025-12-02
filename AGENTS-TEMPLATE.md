@@ -1366,7 +1366,7 @@ ddev drush php:eval "timer_start('test'); node_load(1); \$time = timer_stop('tes
 
 ### Module Structure
 
-**Custom modules** must be placed in `/web/modules/custom/` (or `/[your-webroot]/modules/custom/`) and follow this structure:
+**Custom modules** must be placed in `/web/modules/custom/` and follow this structure (see [Web Root Directory](#web-root-directory) for path variations):
 ```
 [prefix]_[module_name]/
 ├── [prefix]_[module_name].info.yml      # Module definition
@@ -2814,9 +2814,118 @@ ddev drush pm:enable google_analytics
 
 ## Frontend Development
 
+<!--
+===========================================
+HOW TO DISCOVER THEME STRUCTURE - GUIDE FOR AI/LLM
+===========================================
+
+### 1. FIND ACTIVE THEME
+
+```bash
+# Check config for default theme
+cat config/sync/system.theme.yml
+
+# Via Drush
+ddev drush config:get system.theme default
+
+# List all themes
+ddev drush pm:list --type=theme
+
+# Get active theme info via PHP
+ddev drush php:eval "
+\$theme = \Drupal::theme()->getActiveTheme();
+echo 'Name: ' . \$theme->getName() . PHP_EOL;
+echo 'Path: ' . \$theme->getPath() . PHP_EOL;
+echo 'Base themes: ' . implode(', ', array_keys(\$theme->getBaseThemeExtensions())) . PHP_EOL;
+"
+```
+
+### 2. THEME FILE STRUCTURE DISCOVERY
+
+```bash
+# List theme files
+ls -la web/themes/custom/[theme_name]/
+
+# Find all Twig templates
+find web/themes/custom/[theme_name] -name "*.twig" -type f
+
+# Find all SCSS/CSS files
+find web/themes/custom/[theme_name] -name "*.scss" -o -name "*.css" | head -20
+
+# Find all JS files
+find web/themes/custom/[theme_name] -name "*.js" -type f
+
+# Check theme info file
+cat web/themes/custom/[theme_name]/[theme_name].info.yml
+
+# Check libraries definition
+cat web/themes/custom/[theme_name]/[theme_name].libraries.yml
+
+# Check for Single Directory Components
+ls web/themes/custom/[theme_name]/components/
+```
+
+### 3. TWIG TEMPLATE DISCOVERY
+
+```bash
+# Enable Twig debugging (in development.services.yml)
+# Then check HTML source for template suggestions
+
+# Find template source via PHP
+ddev drush php:eval "
+\$theme = \Drupal::theme()->getActiveTheme();
+echo 'Templates path: ' . \$theme->getPath() . '/templates' . PHP_EOL;
+"
+
+# List Twig namespaces
+ddev drush php:eval "
+\$loader = \Drupal::service('twig.loader.filesystem');
+\$namespaces = \$loader->getNamespaces();
+foreach (\$namespaces as \$ns) {
+  echo \$ns . ': ' . implode(', ', \$loader->getPaths(\$ns)) . PHP_EOL;
+}
+"
+```
+
+### 4. PREPROCESS FUNCTIONS
+
+```bash
+# Check theme file for preprocess functions
+grep -n "function.*_preprocess" web/themes/custom/[theme_name]/[theme_name].theme
+
+# Common patterns:
+# [theme_name]_preprocess_node()
+# [theme_name]_preprocess_paragraph()
+# [theme_name]_preprocess_page()
+# [theme_name]_theme_suggestions_*_alter()
+```
+
+### 5. SINGLE DIRECTORY COMPONENTS (SDC)
+
+```bash
+# Check if SDC module is enabled
+ddev drush pm:list | grep sdc
+
+# List components
+ls web/themes/custom/[theme_name]/components/
+
+# Component structure:
+# components/
+#   card/
+#     card.component.yml    # Component definition
+#     card.twig             # Template
+#     card.css              # Styles (optional)
+#     card.js               # Scripts (optional)
+
+# Read component definition
+cat web/themes/custom/[theme_name]/components/[component]/[component].component.yml
+```
+
+-->
+
 ### Theme Development Setup
 
-**Theme location**: `/web/themes/custom/[theme_name]/` (or `/[your-webroot]/themes/custom/[theme_name]/`)
+**Theme location**: `/web/themes/custom/[theme_name]/` (see [Web Root Directory](#web-root-directory) for path variations)
 
 **Initial Setup**:
 ```bash
@@ -2936,6 +3045,244 @@ global:
   dependencies:
     - core/drupal
     - core/jquery
+```
+
+### Adding/Overriding Twig Templates
+
+**Enable Twig debugging** (in `web/sites/default/development.services.yml`):
+```yaml
+parameters:
+  twig.config:
+    debug: true
+    auto_reload: true
+    cache: false
+```
+
+**Find template suggestions**:
+1. Enable Twig debugging
+2. View page source - look for HTML comments like:
+   ```html
+   <!-- THEME DEBUG -->
+   <!-- THEME HOOK: 'node' -->
+   <!-- FILE NAME SUGGESTIONS:
+      * node--article--full.html.twig
+      * node--article.html.twig
+      * node--1.html.twig
+      * node.html.twig
+   -->
+   ```
+3. Copy original template from `core/themes/` or contrib module
+4. Place in `templates/` directory with appropriate name
+5. Clear cache: `ddev drush cr`
+
+**Template naming conventions**:
+- **Nodes**: `node--[type]--[view-mode].html.twig`
+- **Paragraphs**: `paragraph--[type].html.twig`
+- **Blocks**: `block--[block-type].html.twig`
+- **Fields**: `field--[field-name]--[entity-type].html.twig`
+
+**Standard template directory structure**:
+```
+templates/
+├── block/           # Block templates
+├── content/         # Node templates
+├── field/           # Field templates
+├── form/            # Form element templates
+├── layout/          # Layout templates
+├── misc/            # Miscellaneous templates
+├── navigation/      # Menu and navigation
+├── paragraph/       # Paragraph templates
+└── views/           # Views templates
+```
+
+### Preprocess Functions
+
+Add to `[theme_name].theme` file:
+
+```php
+<?php
+
+/**
+ * Implements hook_preprocess_node().
+ */
+function [theme_name]_preprocess_node(&$variables) {
+  $node = $variables['node'];
+
+  // Add custom variables
+  $variables['custom_var'] = 'value';
+
+  // Add classes based on content type
+  if ($node->bundle() == 'article') {
+    $variables['attributes']['class'][] = 'article-content';
+  }
+}
+
+/**
+ * Implements hook_preprocess_paragraph().
+ */
+function [theme_name]_preprocess_paragraph(&$variables) {
+  $paragraph = $variables['paragraph'];
+  $variables['paragraph_type'] = $paragraph->bundle();
+}
+
+/**
+ * Implements hook_preprocess_page().
+ */
+function [theme_name]_preprocess_page(&$variables) {
+  // Add site-wide variables
+  $variables['site_name'] = \Drupal::config('system.site')->get('name');
+}
+
+/**
+ * Implements hook_theme_suggestions_node_alter().
+ */
+function [theme_name]_theme_suggestions_node_alter(array &$suggestions, array $variables) {
+  // Add suggestion based on custom field
+  $node = $variables['elements']['#node'];
+  if ($node->hasField('field_layout') && !$node->get('field_layout')->isEmpty()) {
+    $suggestions[] = 'node__' . $node->bundle() . '__' . $node->get('field_layout')->value;
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function [theme_name]_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  // Customize forms
+  if (strpos($form_id, 'search') !== FALSE) {
+    $form['keys']['#attributes']['placeholder'] = t('Search...');
+  }
+}
+```
+
+### Single Directory Components (SDC)
+
+**Requirements**: Drupal 10.1+ or SDC contrib module for Drupal 10.0
+
+**Enable SDC**:
+```bash
+# Core SDC (Drupal 10.1+)
+ddev drush pm:enable sdc
+
+# Or contrib for Drupal 10.0
+ddev composer require drupal/sdc
+ddev drush pm:enable sdc
+```
+
+**Create a new component**:
+
+1. Create directory: `web/themes/custom/[theme_name]/components/card/`
+
+2. Create `card.component.yml`:
+```yaml
+name: Card
+status: stable
+props:
+  type: object
+  properties:
+    title:
+      type: string
+      title: Title
+    description:
+      type: string
+      title: Description
+    image_url:
+      type: string
+      title: Image URL
+    link:
+      type: string
+      title: Link URL
+slots:
+  content:
+    title: Content
+```
+
+3. Create `card.twig`:
+```twig
+<article class="card">
+  {% if image_url %}
+    <img src="{{ image_url }}" alt="{{ title }}" class="card__image">
+  {% endif %}
+  <div class="card__content">
+    <h3 class="card__title">{{ title }}</h3>
+    {% if description %}
+      <p class="card__description">{{ description }}</p>
+    {% endif %}
+    {{ content }}
+    {% if link %}
+      <a href="{{ link }}" class="card__link">Read more</a>
+    {% endif %}
+  </div>
+</article>
+```
+
+4. Create `card.css`:
+```css
+.card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.card__image {
+  width: 100%;
+  height: auto;
+}
+.card__content {
+  padding: 1rem;
+}
+```
+
+**Use component in templates**:
+```twig
+{# Include component #}
+{% include '[theme_name]:card' with {
+  title: node.label,
+  description: content.body|render|striptags|slice(0, 150) ~ '...',
+  image_url: file_url(node.field_image.entity.uri.value),
+  link: path('entity.node.canonical', {'node': node.id})
+} %}
+
+{# Embed with slots #}
+{% embed '[theme_name]:card' with { title: 'My Card' } %}
+  {% block content %}
+    <p>Custom slot content here</p>
+  {% endblock %}
+{% endembed %}
+```
+
+**List available components**:
+```bash
+ddev drush sdc:list
+```
+
+### Theme Hook Suggestions
+
+Add custom template suggestions:
+
+```php
+/**
+ * Implements hook_theme_suggestions_page_alter().
+ */
+function [theme_name]_theme_suggestions_page_alter(array &$suggestions, array $variables) {
+  // Add suggestion based on node type
+  if ($node = \Drupal::routeMatch()->getParameter('node')) {
+    $suggestions[] = 'page__node__' . $node->bundle();
+  }
+
+  // Add suggestion based on path
+  $current_path = \Drupal::service('path.current')->getPath();
+  $path_alias = \Drupal::service('path_alias.manager')->getAliasByPath($current_path);
+  $path_alias = ltrim($path_alias, '/');
+  $suggestions[] = 'page__' . str_replace('/', '__', $path_alias);
+}
+
+/**
+ * Implements hook_theme_suggestions_views_view_alter().
+ */
+function [theme_name]_theme_suggestions_views_view_alter(array &$suggestions, array $variables) {
+  $suggestions[] = 'views_view__' . $variables['view']->id();
+  $suggestions[] = 'views_view__' . $variables['view']->id() . '__' . $variables['view']->current_display;
+}
 ```
 
 ### Troubleshooting Frontend Builds
@@ -3387,6 +3734,139 @@ Add sections specific to your project here
 ===========================================
 -->
 
+<!--
+===========================================
+HOW TO DISCOVER FULL ENTITY STRUCTURE - GUIDE FOR AI/LLM
+===========================================
+
+Use this guide to discover the complete entity structure of a Drupal project.
+Priority order: 1) Config YAML files (most complete), 2) Drush commands, 3) PHP evaluation
+
+### 1. CONFIG YAML FILES (Primary Source)
+
+Default config directory: `./config/sync/` (see "Directory Structure" section for verification commands and multisite paths)
+
+**Entity Type Config File Patterns:**
+
+| Entity Type | Config File Pattern | Example |
+|-------------|---------------------|---------|
+| Content Types | `node.type.*.yml` | `node.type.article.yml` |
+| Field Storage | `field.storage.*.yml` | `field.storage.node.field_image.yml` |
+| Field Instance | `field.field.*.yml` | `field.field.node.article.field_image.yml` |
+| Paragraph Types | `paragraphs.paragraphs_type.*.yml` | `paragraphs.paragraphs_type.text.yml` |
+| Media Types | `media.type.*.yml` | `media.type.image.yml` |
+| Taxonomy Vocabularies | `taxonomy.vocabulary.*.yml` | `taxonomy.vocabulary.tags.yml` |
+| View Modes | `core.entity_view_mode.*.yml` | `core.entity_view_mode.node.teaser.yml` |
+| Form Modes | `core.entity_form_mode.*.yml` | `core.entity_form_mode.node.default.yml` |
+| View Display | `core.entity_view_display.*.yml` | `core.entity_view_display.node.article.default.yml` |
+| Form Display | `core.entity_form_display.*.yml` | `core.entity_form_display.node.article.default.yml` |
+
+**Commands to list config files:**
+```bash
+# List all content type configs
+ls config/sync/node.type.*.yml
+
+# List all field storage configs
+ls config/sync/field.storage.*.yml
+
+# List all paragraph type configs
+ls config/sync/paragraphs.paragraphs_type.*.yml
+
+# Read specific config file
+cat config/sync/node.type.article.yml
+```
+
+### 2. DRUSH COMMANDS
+
+```bash
+# List all entity types
+ddev drush entity:info
+
+# List bundles for entity type
+ddev drush entity:bundle-info node
+ddev drush entity:bundle-info paragraph
+ddev drush entity:bundle-info media
+ddev drush entity:bundle-info taxonomy_term
+
+# List fields for entity type and bundle
+ddev drush field:list node article
+ddev drush field:list paragraph text
+
+# Get field info
+ddev drush field:info node article field_image
+
+# Export all config
+ddev drush config:export
+
+# Get specific config
+ddev drush config:get node.type.article
+
+# List all config
+ddev drush config:list | grep node.type
+```
+
+### 3. PHP/DRUSH PHP:EVAL
+
+For programmatic access to field definitions:
+
+```bash
+# Get all fields for content type
+ddev drush php:eval "
+\$fields = \Drupal::service('entity_field.manager')->getFieldDefinitions('node', 'article');
+foreach (\$fields as \$name => \$field) {
+  echo \$name . ' - ' . \$field->getLabel() . ' (' . \$field->getType() . ')' . PHP_EOL;
+}
+"
+
+# Get field settings
+ddev drush php:eval "
+\$field = \Drupal\field\Entity\FieldConfig::loadByName('node', 'article', 'field_image');
+print_r(\$field->getSettings());
+"
+
+# Get all bundles for entity type
+ddev drush php:eval "
+\$bundles = \Drupal::service('entity_type.bundle.info')->getBundleInfo('node');
+foreach (\$bundles as \$id => \$info) {
+  echo \$id . ' - ' . \$info['label'] . PHP_EOL;
+}
+"
+
+# Export full entity structure as JSON
+ddev drush php:eval "
+\$entity_types = ['node', 'paragraph', 'media', 'taxonomy_term'];
+\$result = [];
+foreach (\$entity_types as \$entity_type) {
+  \$bundles = \Drupal::service('entity_type.bundle.info')->getBundleInfo(\$entity_type);
+  foreach (\$bundles as \$bundle_id => \$bundle_info) {
+    \$fields = \Drupal::service('entity_field.manager')->getFieldDefinitions(\$entity_type, \$bundle_id);
+    \$field_list = [];
+    foreach (\$fields as \$name => \$field) {
+      \$field_list[\$name] = [
+        'label' => (string) \$field->getLabel(),
+        'type' => \$field->getType(),
+        'required' => \$field->isRequired(),
+      ];
+    }
+    \$result[\$entity_type][\$bundle_id] = [
+      'label' => \$bundle_info['label'],
+      'fields' => \$field_list,
+    ];
+  }
+}
+echo json_encode(\$result, JSON_PRETTY_PRINT);
+"
+```
+
+### RECOMMENDED WORKFLOW
+
+1. **First**: Check if `config/sync/` directory exists and list YAML files
+2. **Second**: Use `ddev drush entity:bundle-info [type]` for quick overview
+3. **Third**: Use `ddev drush field:list [type] [bundle]` for field details
+4. **Fourth**: Use `php:eval` for complex queries or full export
+
+-->
+
 ## Drupal Entities Structure
 
 Complete reference of content types, media types, taxonomies, and custom entities in this project.
@@ -3428,17 +3908,11 @@ Example format:
 }
 ```
 
-**How to discover content types**:
+**Discovery**: See "HOW TO DISCOVER FULL ENTITY STRUCTURE" guide above. Quick commands:
 ```bash
-# List all content types
-ddev drush entity:bundle-info node
-
-# Export content type configuration
-ddev drush config:export --destination=/tmp/config
-# Check: /tmp/config/node.type.*.yml
-
-# List fields for content type
-ddev drush field:list node article
+ddev drush entity:bundle-info node        # List all content types
+ls config/sync/node.type.*.yml            # Config files (PRIMARY SOURCE)
+ddev drush field:list node article        # Fields for specific type
 ```
 
 ### Paragraph Types
@@ -3447,6 +3921,13 @@ ddev drush field:list node article
 Document paragraph types if using Paragraphs module.
 Organize by category for better readability.
 -->
+
+**Discovery**: See "HOW TO DISCOVER FULL ENTITY STRUCTURE" guide above. Quick commands:
+```bash
+ddev drush entity:bundle-info paragraph       # List all paragraph types
+ls config/sync/paragraphs.paragraphs_type.*.yml  # Config files (PRIMARY SOURCE)
+ddev drush field:list paragraph text          # Fields for specific type
+```
 
 ```json
 {
@@ -3471,6 +3952,13 @@ Organize by category for better readability.
 ```
 
 ### Media Types
+
+**Discovery**: See "HOW TO DISCOVER FULL ENTITY STRUCTURE" guide above. Quick commands:
+```bash
+ddev drush entity:bundle-info media    # List all media types
+ls config/sync/media.type.*.yml        # Config files (PRIMARY SOURCE)
+ddev drush field:list media image      # Fields for specific type
+```
 
 ```json
 {
@@ -3499,6 +3987,13 @@ Organize by category for better readability.
 
 ### Taxonomy Vocabularies
 
+**Discovery**: See "HOW TO DISCOVER FULL ENTITY STRUCTURE" guide above. Quick commands:
+```bash
+ddev drush entity:bundle-info taxonomy_term   # List all vocabularies
+ls config/sync/taxonomy.vocabulary.*.yml      # Config files (PRIMARY SOURCE)
+ddev drush field:list taxonomy_term tags      # Fields for specific vocabulary
+```
+
 ```json
 {
   "taxonomies": {
@@ -3524,6 +4019,12 @@ Organize by category for better readability.
 Document custom content entities here if project has any.
 -->
 
+**Discovery**: See "HOW TO DISCOVER FULL ENTITY STRUCTURE" guide above. Quick commands:
+```bash
+ddev drush entity:info                        # List ALL entity types
+ls web/modules/custom/*/src/Entity/*.php      # Find custom entity classes
+```
+
 ```json
 {
   "custom_entities": {
@@ -3546,15 +4047,6 @@ Document custom content entities here if project has any.
     }
   }
 }
-```
-
-**Discover custom entities**:
-```bash
-# List all entity types
-ddev drush entity:info
-
-# View entity definition
-ddev drush php:eval "print_r(\Drupal::entityTypeManager()->getDefinition('entity_id'));"
 ```
 
 ### Entity Relationships
@@ -3586,6 +4078,12 @@ Use this section to explain how entities connect.
 - Structured: `link`, `address`, `telephone`
 
 ### View Modes
+
+**Discovery**: See "HOW TO DISCOVER FULL ENTITY STRUCTURE" guide above. Quick commands:
+```bash
+ls config/sync/core.entity_view_mode.*.yml       # View mode definitions
+ls config/sync/core.entity_view_display.node.*.yml  # Node view displays
+```
 
 **Node View Modes**:
 - `full` - Full content display
@@ -3785,92 +4283,23 @@ Example:
 TEMPLATE CUSTOMIZATION CHECKLIST
 ===========================================
 
-When using this template for a new project, complete the following tasks:
+For the full customization checklist with phases, see README.md in the repository:
+https://github.com/droptica/drupal-agents-md
 
-## Required Replacements
+The checklist includes:
+- Phase 1: Project Discovery (composer.json, web root, modules, theme, entities)
+- Phase 2: Replace Placeholders ([PROJECT_NAME], [VERSION], web/, etc.)
+- Phase 3: Fill Project-Specific Sections (entities, modules, languages)
+- Phase 4: Cleanup (remove inapplicable commented sections)
+- Phase 5: Finalize (save as AGENTS.md, summary)
 
-- [ ] **CRITICAL**: Verify and replace `web/` with your actual web root directory name if different
-  - Check your project: Is it `web/`, `docroot/`, `html/`, or other?
-  - Replace ALL occurrences throughout this document
-  - Common locations: module paths, theme paths, settings.php path
-- [ ] Replace [PROJECT_NAME] with your project name throughout
-- [ ] Replace [VERSION] with Drupal version (e.g., 10, 11)
-- [ ] Replace [REPOSITORY_URL] with your Git repository URL
-- [ ] Replace [PROJECT_DIR] with your project directory name
-- [ ] Replace [BUILD_COMMAND] with your DDEV build command
-- [ ] Replace [prefix] with your module prefix (e.g., d_, custom_, myproject_)
-- [ ] Replace [theme_name] with your custom theme name
-- [ ] Replace [module_name] with actual module names where applicable
+Required placeholder replacements:
+- [PROJECT_NAME], [VERSION], [PHP_VERSION], [REPOSITORY_URL]
+- [PROJECT_DIR], [BUILD_COMMAND], [prefix], [theme_name]
+- web/ (if your web root is different: docroot/, html/, etc.)
 
-## Sections to Customize
-
-- [ ] **Project Overview** - Add project description, architecture details
-- [ ] **Project Architecture** - Document custom entities, roles, use cases
-- [ ] **Git Workflow** - Customize branching strategy, commit standards
-- [ ] **Development Environment URLs** - List actual local development URLs
-- [ ] **DDEV Workflow** - Add project-specific DDEV commands
-- [ ] **Composer Management** - Document specific version requirements
-- [ ] **Composer Scripts** - Define custom scripts for build, deploy, test
-- [ ] **Environment Variables Setup** - List required environment variables
-- [ ] **Code Quality Tools** - Verify tool configuration paths, add Upgrade Status if needed
-- [ ] **Testing** - Configure test framework and organization
-- [ ] **Module Structure** - Add project-specific module patterns
-- [ ] **Directory Structure** - Document actual directory structure
-- [ ] **Headless/API-First** - Configure if using JSON:API or GraphQL
-- [ ] **SEO & Structured Data** - Configure Metatag, Schema.org, sitemap
-- [ ] **Multilingual Configuration** - Document languages, translation setup if multilingual
-- [ ] **Configuration Management** - Add config split/ignore details if applicable
-- [ ] **Security** - Add project-specific security requirements
-- [ ] **Frontend Development** - Configure build tools and commands
-- [ ] **Common Tasks** - Add project-specific common tasks
-- [ ] **Troubleshooting** - Add project-specific issues and solutions
-- [ ] **Drupal Entities Structure** - Document content types, paragraphs, media, taxonomies
-- [ ] **Entity Relationships** - Document how entities connect
-- [ ] **Entity Constants** - Document status values and constants
-- [ ] **Project-Specific Features** - Document custom functionality
-- [ ] **Tasks and Problems Log** - Start documenting from day one!
-
-## Optional Sections (Uncomment if applicable)
-
-- [ ] **Multisite Configuration** - Uncomment and configure if multisite
-- [ ] **Multisite Drush section** - Uncomment for multisite projects
-- [ ] **AI Integration** - Uncomment if using AI services (OpenAI, etc.)
-- [ ] **Commerce/Payment** - Uncomment if using Drupal Commerce
-- [ ] **Config Split** - Uncomment if using config_split module
-- [ ] **Config Ignore** - Uncomment if using config_ignore module
-- [ ] **Environment Indicators** - Uncomment if using environment_indicator
-
-## Sections to Remove if Not Applicable
-
-- [ ] Remove **Config Split** section if not using config_split
-- [ ] Remove **Config Ignore** section if not using config_ignore
-- [ ] Remove **Environment Indicators** if not using environment_indicator
-- [ ] Remove **Redis** references if not using Redis
-- [ ] Remove **Platform.sh** references if using different hosting
-
-## Important Reminders
-
-- [ ] Update **Tasks and Problems Log** after every development session
-- [ ] Always run `date` command before adding entries to documentation
-- [ ] Keep **Tasks and Problems** section updated with real dates
-- [ ] Document all custom DDEV commands created
-- [ ] Document all environment variables needed
-- [ ] Keep security credentials out of version control
-- [ ] Test all documented commands work correctly
-- [ ] Review and update documentation quarterly
-- [ ] Share this document with all team members
-- [ ] Update checklist as project evolves
-
-## Post-Setup Verification
-
-- [ ] All placeholders replaced
-- [ ] All URLs tested and working
-- [ ] All commands tested and documented
-- [ ] Environment variables documented
-- [ ] Security best practices implemented
-- [ ] Team members trained on documentation
-- [ ] Tasks and Problems section being actively used
-- [ ] Documentation stays up-to-date
+Optional sections to uncomment if applicable:
+- Multisite, AI Integration, Commerce/Payment, Config Split/Ignore
 
 ---
 

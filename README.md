@@ -26,34 +26,61 @@ curl -o AGENTS-TEMPLATE.md https://raw.githubusercontent.com/droptica/drupal-age
 I need you to customize AGENTS-TEMPLATE.md for my Drupal project and save it as AGENTS.md.
 
 Please:
-1. Read AGENTS-TEMPLATE.md
-2. Check my project:
-   - Check composer.json for project name, Drupal version, PHP version
-   - Check if DDEV is used (.ddev/config.yaml exists)
-   - List all custom modules in web/modules/custom/ or docroot/modules/custom/
-   - Check web root directory name (web/, docroot/, html/, or other)
-   - Check if multisite (web/sites/ or docroot/sites/ has multiple directories)
-   - Check languages (config/sync/language.entity.*.yml or via drush if available)
-   - Check if Commerce is installed (composer.json has drupal/commerce)
-   - Check if JSON:API or GraphQL is used (composer.json has drupal/jsonapi_extras or drupal/graphql)
-   - Check theme name (web/themes/custom/ or docroot/themes/custom/)
-   - List content types from config/sync/node.type.*.yml
-3. Replace all placeholders in template:
-   - [PROJECT_NAME] - from composer.json
-   - [VERSION] - Drupal version from composer.json
-   - [PHP_VERSION] - from composer.json require
-   - [REPOSITORY_URL] - leave empty or check .git/config
-   - web/ - replace with actual web root directory name throughout entire file
-   - [PREFIX] - determine custom module prefix (e.g., myproject_, custom_)
-   - [THEME_NAME] - actual theme directory name
-4. Fill "Current Setup" section based on findings:
-   - List installed custom modules
-   - Document multisite configuration if exists
-   - List configured languages
-   - Note if Commerce, AI modules, or other integrations are present
-   - Document content types in Drupal Entities Structure section
-5. Remove commented-out sections if not applicable (multisite, commerce, headless, etc.)
-6. Save as AGENTS.md in project root
+1. Before starting, create a temporary file named `./tmp/agents-md-tasks.md` and copy the following checklist into it. Use this file to track your progress by marking tasks as `[x]` when completed. Update this file after each major step.
+
+# AGENTS.md Customization Checklist
+
+## Phase 1: Project Discovery
+- [ ] Check composer.json for project name, Drupal version, PHP version
+- [ ] Check if DDEV is used (.ddev/config.yaml exists)
+- [ ] Check web root directory name (web/, docroot/, html/, or other)
+- [ ] Check if multisite (web/sites/ or docroot/sites/ has multiple directories)
+- [ ] Check languages (config/sync/language.entity.*.yml or via drush if available)
+- [ ] Check if Commerce is installed (composer.json has drupal/commerce)
+- [ ] Check if JSON:API or GraphQL is used (composer.json has drupal/jsonapi_extras or drupal/graphql)
+- [ ] List all custom modules in web/modules/custom/ or docroot/modules/custom/
+- [ ] Check theme name (web/themes/custom/ or docroot/themes/custom/)
+- [ ] Discover theme structure (active theme, file organization, template suggestions)
+- [ ] Check if theme uses Single Directory Components (SDC)
+- [ ] List preprocess functions in the active theme
+- [ ] List content types from config/sync/node.type.*.yml
+- [ ] Discover other entity types (paragraphs, media, taxonomies, custom entities)
+
+## Phase 2: Replace Placeholders
+- [ ] Replace [PROJECT_NAME] - from composer.json
+- [ ] Replace [VERSION] - Drupal version from composer.json
+- [ ] Replace [PHP_VERSION] - from composer.json require
+- [ ] Replace [REPOSITORY_URL] - leave empty or check .git/config
+- [ ] Replace web/ - replace with actual web root directory name throughout entire file
+- [ ] Replace [PREFIX] - determine custom module prefix (e.g., myproject_, custom_)
+- [ ] Replace [THEME_NAME] - actual theme directory name
+
+## Phase 3: Fill Project-Specific Sections
+- [ ] Fill "Current Setup" section based on findings
+- [ ] List installed custom modules
+- [ ] Document multisite configuration if exists
+- [ ] List configured languages
+- [ ] Note if Commerce, AI modules, or other integrations are present
+- [ ] Document content types and other entities in "Drupal Entities Structure" section
+
+## Phase 4: Cleanup
+- [ ] Remove commented-out sections if not applicable (multisite)
+- [ ] Remove commented-out sections if not applicable (commerce)
+- [ ] Remove commented-out sections if not applicable (headless)
+- [ ] Remove commented-out sections if not applicable (AI integration)
+- [ ] Remove commented-out sections if not applicable (config split/ignore)
+
+## Phase 5: Finalize
+- [ ] Save as AGENTS.md in project root
+- [ ] Show what was found, replaced/customized, and removed/kept commented
+- [ ] Delete the temporary `./tmp/agents-md-tasks.md` file
+
+2. Read AGENTS-TEMPLATE.md and follow all HTML comment guides (HOW TO DISCOVER...)
+3. Execute all discovery steps from Phase 1
+4. Replace all placeholders from Phase 2
+5. Fill sections from Phase 3
+6. Cleanup from Phase 4
+7. Finalize from Phase 5
 
 After customization, show me:
 - What you found in the project
