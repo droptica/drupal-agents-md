@@ -28,6 +28,8 @@ I need you to customize AGENTS-TEMPLATE.md for my Drupal project and save it as 
 Please:
 1. Before starting, create a temporary file named `./tmp/agents-md-tasks.md` and copy the following checklist into it. Use this file to track your progress by marking tasks as `[x]` when completed. Update this file after each major step.
 
+--- CHECKLIST START (copy to ./tmp/agents-md-tasks.md) ---
+
 # AGENTS.md Customization Checklist
 
 ## Phase 1: Project Discovery
@@ -74,6 +76,8 @@ Please:
 - [ ] Save as AGENTS.md in project root
 - [ ] Show what was found, replaced/customized, and removed/kept commented
 - [ ] Delete the temporary `./tmp/agents-md-tasks.md` file
+
+--- CHECKLIST END ---
 
 2. Read AGENTS-TEMPLATE.md and follow all HTML comment guides (HOW TO DISCOVER...)
 3. Execute all discovery steps from Phase 1
@@ -139,6 +143,12 @@ If you prefer to customize manually, follow the checklist at the end of AGENTS-T
 Cursor • VS Code + Copilot • Claude Code • Codex • Aider • Jules • Gemini CLI • Roo Code • Zed • Devin
 
 See [agents.md](https://agents.md) for full list.
+
+## FAQ / Common Issues
+
+*This section will be updated based on community feedback and common questions.*
+
+*Have a question or issue? [Open an issue](https://github.com/droptica/drupal-agents-md/issues) and we'll add it here.*
 
 ## Contributing
 

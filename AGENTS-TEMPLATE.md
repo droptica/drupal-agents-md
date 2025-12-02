@@ -2819,6 +2819,21 @@ ddev drush pm:enable google_analytics
 HOW TO DISCOVER THEME STRUCTURE - GUIDE FOR AI/LLM
 ===========================================
 
+Use this guide to discover the theme structure of a Drupal project.
+Priority order: 1) Config + theme info file, 2) File system exploration, 3) Drush/PHP commands
+
+**Theme File Types Reference:**
+
+| File Type | Location | Purpose |
+|-----------|----------|---------|
+| Theme info | `[theme].info.yml` | Theme definition, regions, libraries |
+| Libraries | `[theme].libraries.yml` | CSS/JS asset definitions |
+| Theme file | `[theme].theme` | Preprocess functions, hooks |
+| Twig templates | `templates/` | HTML templates |
+| Components (SDC) | `components/` | Single Directory Components |
+| Stylesheets | `css/` or `scss/` | Compiled/source styles |
+| JavaScript | `js/` | JavaScript files |
+
 ### 1. FIND ACTIVE THEME
 
 ```bash
@@ -2920,6 +2935,14 @@ ls web/themes/custom/[theme_name]/components/
 # Read component definition
 cat web/themes/custom/[theme_name]/components/[component]/[component].component.yml
 ```
+
+### RECOMMENDED WORKFLOW
+
+1. **First**: Check `config/sync/system.theme.yml` for active theme name
+2. **Second**: Read `[theme].info.yml` for theme configuration and base themes
+3. **Third**: Explore `templates/` directory for Twig templates
+4. **Fourth**: Check `[theme].theme` file for preprocess functions
+5. **Fifth**: Check `components/` directory if using SDC
 
 -->
 
