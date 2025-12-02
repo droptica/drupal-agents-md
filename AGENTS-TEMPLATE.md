@@ -1,0 +1,3880 @@
+# AGENTS.md
+
+A guide for AI coding agents working on the [PROJECT_NAME] project.
+
+## AI Response Requirements
+
+When working with this project, follow these communication guidelines:
+
+- **Give me code, not high-level explanations** - Provide actual implementations, not conceptual descriptions
+- **Be direct and concise** - Skip unnecessary preambles and get to the solution
+- **Treat me as a Drupal expert** - Provide complete implementations without over-explaining basics
+- **Suggest better approaches** - If you see a better way, propose it with code
+- **Show only relevant code** - Don't repeat entire files, just the changed sections with minimal context
+- **Split responses only when necessary** - Complete the answer in one response if possible
+- **Focus on Drupal-specific solutions** - Use Drupal APIs and patterns, not generic PHP
+- **Implement best practices directly** - Don't lecture about them, just use them in code
+- **Ask clarifying questions** - If requirements are ambiguous, ask before implementing
+
+### Response Format
+
+- Use clear, concise language
+- Code examples should be production-ready
+- Include necessary imports and dependencies
+- Document complex logic with inline comments (explain WHY, not WHAT)
+- Provide complete file paths when referencing code
+- Use proper markdown formatting for code blocks
+
+## Project Overview
+
+- **Platform**: Drupal [VERSION] [single site | multisite installation]
+- **Context**: [Brief project description]
+- **Architecture**: [Architecture description]
+- **Security**: [Security requirements level]
+- **Languages**: [single language | multilingual - list languages]
+
+### Project Architecture
+
+- **Custom Drupal Entities**: [List custom entities if any]
+- **Role System**: [Describe role system]
+- **Typical Use Cases**: [List main use cases]
+
+<!--
+===========================================
+MULTISITE CONFIGURATION (uncomment if applicable)
+===========================================
+
+### Multi-site Setup
+
+This project manages multiple sites:
+- **[site1.domain]** - [Description and purpose]
+- **[site2.domain]** - [Description and purpose]
+- **[site3.domain]** - [Description and purpose]
+
+**Site-specific databases**: Each site uses a separate database
+**Shared codebase**: All sites share the same Drupal codebase
+**Configuration**: Site-specific config in `/config/[site.domain]/`
+-->
+
+<!--
+===========================================
+AI INTEGRATION (uncomment if applicable)
+===========================================
+
+### AI Integration
+
+**AI Provider**: [OpenAI | Other AI service]
+**Use Cases**:
+- [Content generation]
+- [Translation automation]
+- [Content summarization]
+- [Other AI features]
+
+**API Key Management**: Stored in environment variables (`.ddev/.env`)
+**Modules**: [List AI-related custom modules]
+-->
+
+<!--
+===========================================
+COMMERCE/PAYMENT (uncomment if applicable)
+===========================================
+
+### E-commerce Integration
+
+**Commerce Platform**: Drupal Commerce [VERSION]
+**Payment Gateways**: [List payment providers - e.g., Stripe, PayPal, TPay]
+**Custom Commerce Modules**: [List custom modules]
+
+**Key Features**:
+- [Product catalog]
+- [Shopping cart]
+- [Checkout process]
+- [Order management]
+- [Payment processing]
+
+**API Keys**: Payment gateway credentials stored in environment variables
+-->
+
+## Date Verification Rule
+
+**CRITICAL**: Before writing ANY date to `.md` or documentation files, ALWAYS check the current system date first.
+
+```bash
+# Always run this command first before documenting
+date
+```
+
+**Important**:
+- Never use example dates like "2024-01-01" or assume the current date
+- Always use the actual system date from the `date` command
+- This ensures documentation timestamps are accurate and traceable
+- Apply this rule when updating TASKS_AND_PROBLEMS.md or any documentation
+
+## Git Workflow & Branching Strategy
+
+### Repository Structure
+
+**Branch Types**:
+- `main` or `master` - Production-ready code
+- `staging` or `develop` - Integration branch for testing
+- `feature/[feature-name]` - New features
+- `bugfix/[bug-name]` - Bug fixes
+- `hotfix/[issue-name]` - Critical production fixes
+- `release/[version]` - Release preparation
+
+### Git Flow Workflow
+
+**Standard Development Flow**:
+
+1. **Start new feature**:
+   ```bash
+   git checkout staging
+   git pull origin staging
+   git checkout -b feature/my-new-feature
+   ```
+
+2. **Work on feature**:
+   ```bash
+   # Make changes
+   git add .
+   git commit -m "Add new feature: description"
+
+   # Keep updated with staging
+   git fetch origin
+   git rebase origin/staging
+   ```
+
+3. **Push and create Pull Request**:
+   ```bash
+   git push origin feature/my-new-feature
+   # Create PR in GitHub/GitLab/Bitbucket
+   ```
+
+4. **After PR approval**:
+   ```bash
+   # Merge via UI or:
+   git checkout staging
+   git merge --no-ff feature/my-new-feature
+   git push origin staging
+   git branch -d feature/my-new-feature
+   ```
+
+### Hotfix Workflow
+
+**For critical production issues**:
+
+```bash
+# Create hotfix from main
+git checkout main
+git pull origin main
+git checkout -b hotfix/critical-bug-fix
+
+# Fix and test
+git add .
+git commit -m "Hotfix: Fix critical issue with [description]"
+
+# Merge to main
+git checkout main
+git merge --no-ff hotfix/critical-bug-fix
+git tag -a v1.0.1 -m "Hotfix release 1.0.1"
+git push origin main --tags
+
+# Merge back to staging
+git checkout staging
+git merge --no-ff hotfix/critical-bug-fix
+git push origin staging
+
+# Clean up
+git branch -d hotfix/critical-bug-fix
+```
+
+### Commit Message Standards
+
+**Format**:
+```
+[Type]: Brief description (max 50 chars)
+
+Detailed explanation of changes (optional, max 72 chars per line)
+
+- Key change 1
+- Key change 2
+
+Refs: #123 (issue/ticket number)
+```
+
+**Types**:
+- `feat:` - New feature
+- `fix:` - Bug fix
+- `docs:` - Documentation changes
+- `style:` - Code style changes (formatting, no logic change)
+- `refactor:` - Code refactoring
+- `perf:` - Performance improvements
+- `test:` - Adding or updating tests
+- `chore:` - Build process or tooling changes
+- `config:` - Configuration changes
+
+**Examples**:
+```bash
+git commit -m "feat: Add user profile dashboard"
+git commit -m "fix: Resolve cache clearing issue in custom module"
+git commit -m "config: Update environment indicator colors"
+git commit -m "refactor: Extract form validation to service"
+```
+
+### Code Review Process
+
+**Before Creating PR**:
+- [ ] Code follows Drupal coding standards (run `phpcs`)
+- [ ] No PHPStan errors (run `phpstan`)
+- [ ] All tests pass (run `phpunit`, `codecept`)
+- [ ] Configuration exported (run `drush cex`)
+- [ ] Documentation updated
+- [ ] Commit messages are clear and follow standards
+
+**PR Description Template**:
+```markdown
+## Description
+Brief description of changes
+
+## Type of Change
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Breaking change
+- [ ] Documentation update
+
+## Testing
+- [ ] Unit tests added/updated
+- [ ] Manual testing completed
+- [ ] Tested in multiple browsers (if frontend)
+
+## Checklist
+- [ ] Code follows coding standards
+- [ ] Self-review completed
+- [ ] Documentation updated
+- [ ] No new warnings or errors
+```
+
+### Git Best Practices
+
+**Do**:
+- ✅ Commit often with descriptive messages
+- ✅ Keep commits atomic (one logical change per commit)
+- ✅ Pull before starting new work
+- ✅ Use feature branches for all changes
+- ✅ Rebase feature branches on staging regularly
+- ✅ Test before pushing
+- ✅ Review your own code before PR
+
+**Don't**:
+- ❌ Commit directly to main/staging
+- ❌ Force push to shared branches (`--force`)
+- ❌ Commit credentials or sensitive data
+- ❌ Commit large binary files
+- ❌ Mix unrelated changes in one commit
+- ❌ Use vague commit messages ("fix stuff", "updates")
+
+### Git Configuration
+
+**Recommended Git Config**:
+```bash
+# Set user info
+git config user.name "Your Name"
+git config user.email "your.email@example.com"
+
+# Set default branch name
+git config --global init.defaultBranch main
+
+# Enable color output
+git config --global color.ui auto
+
+# Set default editor
+git config --global core.editor "nano"  # or vim, code, etc.
+
+# Enable rerere (reuse recorded resolution)
+git config --global rerere.enabled true
+
+# Set up aliases
+git config --global alias.st status
+git config --global alias.co checkout
+git config --global alias.br branch
+git config --global alias.ci commit
+git config --global alias.unstage 'reset HEAD --'
+git config --global alias.last 'log -1 HEAD'
+```
+
+### Useful Git Commands
+
+```bash
+# View commit history
+git log --oneline --graph --all
+
+# View changes in working directory
+git diff
+
+# View changes staged for commit
+git diff --cached
+
+# Undo last commit (keep changes)
+git reset --soft HEAD~1
+
+# Undo last commit (discard changes)
+git reset --hard HEAD~1
+
+# Stash changes temporarily
+git stash
+git stash pop
+
+# View stash list
+git stash list
+
+# Cherry-pick specific commit
+git cherry-pick [commit-hash]
+
+# Find who changed a line
+git blame [file]
+
+# Search commits
+git log --grep="keyword"
+```
+
+### Resolving Conflicts
+
+```bash
+# When merge conflict occurs
+git status  # View conflicted files
+
+# Edit conflicted files manually
+# Look for <<<<<<< HEAD markers
+
+# After resolving
+git add [resolved-files]
+git commit
+
+# Or abort merge
+git merge --abort
+```
+
+### .gitignore Best Practices
+
+**Essential ignores for Drupal**:
+```gitignore
+# Drupal core files
+web/core/
+web/modules/contrib/
+web/themes/contrib/
+web/profiles/contrib/
+vendor/
+
+# Site-specific files
+web/sites/*/files/
+web/sites/*/private/
+web/sites/*/settings.local.php
+web/sites/*/services.local.yml
+
+# Development files
+.ddev/
+*.log
+.DS_Store
+.idea/
+.vscode/
+
+# Build artifacts
+node_modules/
+npm-debug.log
+web/themes/custom/*/dist/
+
+# Environment files
+.env
+.env.local
+```
+
+## Development Environment
+
+### Web Root Directory
+
+**IMPORTANT**: This template uses `web/` as the default web root directory name, but your project may use a different name:
+
+**Common web root directory names**:
+- `web/` - Default in Drupal Composer template (most common)
+- `docroot/` - Used by some hosting providers and older projects
+- `html/` or `public_html/` - Some shared hosting environments
+- `www/` - Some server configurations
+
+**How to identify your web root**:
+```bash
+# Check your project structure
+ls -la
+
+# Look for directory containing index.php and core/
+# That's your web root directory
+```
+
+**Throughout this document**:
+- We use `web/` as the default
+- **Replace `web/` with your actual web root directory name** in all commands and paths
+- Examples: If your web root is `docroot/`, change `web/modules/custom/` to `docroot/modules/custom/`
+
+### Setup Commands
+
+```bash
+# Install DDEV (if not installed)
+curl -LO https://raw.githubusercontent.com/drud/ddev/master/scripts/install_ddev.sh && bash install_ddev.sh
+
+# Clone repository
+git clone [REPOSITORY_URL]
+cd [PROJECT_DIR]
+
+# Start DDEV environment
+ddev start
+# [Add project-specific setup commands]
+
+# Build
+ddev [BUILD_COMMAND]
+```
+
+### DDEV Workflow
+
+- **Container Access**: `ddev ssh` to shell into docker container
+- **Local URLs**: [List local URLs]
+- **Project Info**: `ddev describe` shows all services and URLs
+
+### Custom DDEV Commands
+
+Create custom commands in `.ddev/commands/host/` for frequently used operations.
+
+**Creating a Custom Command**:
+
+1. Create file in `.ddev/commands/host/[command-name]`:
+   ```bash
+   #!/bin/bash
+
+   # Description: [Brief description of what command does]
+   # Usage: ddev [command-name]
+
+   # Your command logic here
+   echo "Running custom command..."
+   ```
+
+2. Make it executable:
+   ```bash
+   chmod +x .ddev/commands/host/[command-name]
+   ```
+
+3. Use it:
+   ```bash
+   ddev [command-name]
+   ```
+
+**CRITICAL WARNING**:
+- **Do NOT use special DDEV comments** like `## #ddev-generated` or `## #ddev-description`
+- These special comments prevent DDEV from recognizing the command
+- Use regular bash comments (#) instead
+- DDEV reads the file without these special markers
+
+**Example Custom Command** (`.ddev/commands/host/quick-setup`):
+```bash
+#!/bin/bash
+
+# Quick project setup command
+# Pulls database, imports files, clears cache
+
+echo "Starting quick setup..."
+
+# Pull database from platform
+ddev pull platform -y
+
+# Import configuration
+ddev drush cim -y
+
+# Clear caches
+ddev drush cr
+
+# Get login link
+ddev drush uli
+
+echo "Setup complete!"
+```
+
+**Common Custom Commands**:
+- `ddev db-refresh` - Refresh database from production
+- `ddev quick-deploy` - Build and export config
+- `ddev run-tests` - Run test suites
+- `ddev theme-build` - Build theme assets
+
+### Drush Commands
+
+**Version**: Drush [VERSION]
+
+```bash
+# Status check
+ddev drush status
+
+# Cache rebuild
+ddev drush cr
+
+# Database query
+ddev drush sql:query "SELECT * FROM node_field_data LIMIT 5;"
+
+# PHP evaluation for quick testing
+ddev drush php:eval "echo 'Hello World';"
+
+# Test service availability
+ddev drush php:eval "var_dump(\Drupal::hasService('entity_type.manager'));"
+
+# Load and inspect entities
+ddev drush php:eval "\$node = \Drupal::entityTypeManager()->getStorage('node')->load(1); var_dump(\$node->getTitle());"
+
+# Check configuration
+ddev drush php:eval "var_dump(\Drupal::config('system.site')->get('name'));"
+
+# Test custom service
+ddev drush php:eval "var_dump(\Drupal::service('custom_module.service_name'));"
+
+# Configuration export/import
+ddev drush cex
+ddev drush cim
+
+# Database updates
+ddev drush updb
+```
+
+<!--
+===========================================
+MULTISITE SECTION (uncomment if needed)
+===========================================
+
+**Multisite Drush**: Always use `-l [instance]` flag for multisite operations:
+```bash
+# Status check per instance
+ddev drush -l [instance1.ddev.site] status
+ddev drush -l [instance2.ddev.site] status
+
+# Cache rebuild per instance
+ddev drush -l [instance] cr
+
+# Test all multisite instances
+for site in [instance1] [instance2] [instance3]; do
+  ddev drush -l $site status
+done
+```
+-->
+
+### Composer Management
+
+**Drupal Core Updates**:
+```bash
+# Check module compatibility
+ddev composer outdated 'drupal/*'
+
+# Update core packages
+ddev composer require drupal/core:X.Y.Z drupal/core-composer-scaffold:X.Y.Z drupal/core-recommended:X.Y.Z --update-with-all-dependencies
+ddev composer require --dev drupal/core-dev:X.Y.Z
+
+# Run database updates
+ddev drush updb
+
+# Test and check logs
+```
+
+**Module Updates**:
+```bash
+# 1. Update version in composer.json
+# 2. Run update
+ddev composer update drupal/MODULE_NAME --with-dependencies
+```
+
+**Check Outdated Packages**:
+```bash
+ddev composer outdated 'drupal/*'
+```
+
+### Composer Scripts
+
+**Custom Composer Scripts** automate common development tasks. Define in `composer.json` under `scripts` section:
+
+```json
+{
+  "scripts": {
+    "build": [
+      "@composer install",
+      "@drush cr",
+      "@drush updb -y",
+      "@drush cim -y"
+    ],
+    "deploy": [
+      "@composer install --no-dev --optimize-autoloader",
+      "@drush cr",
+      "@drush updb -y",
+      "@drush cim -y"
+    ],
+    "test": [
+      "@phpcs",
+      "@phpstan",
+      "@phpunit"
+    ],
+    "phpcs": "phpcs --standard=Drupal web/modules/custom",
+    "phpcbf": "phpcbf --standard=Drupal web/modules/custom",
+    "phpstan": "phpstan analyze web/modules/custom --level=1",
+    "phpunit": "phpunit web/modules/custom",
+    "post-install-cmd": [
+      "@drush cr"
+    ],
+    "post-update-cmd": [
+      "@drush cr",
+      "@drush updb -y"
+    ]
+  },
+  "scripts-descriptions": {
+    "build": "Build project for development",
+    "deploy": "Build project for production deployment",
+    "test": "Run all tests and code quality checks",
+    "phpcs": "Check coding standards",
+    "phpcbf": "Fix coding standards automatically",
+    "phpstan": "Run static analysis",
+    "phpunit": "Run PHPUnit tests"
+  }
+}
+```
+
+**Using Composer Scripts**:
+```bash
+# Run build script
+ddev composer build
+
+# Run deployment script
+ddev composer deploy
+
+# Run all tests
+ddev composer test
+
+# Run specific script
+ddev composer phpcs
+
+# Fix coding standards
+ddev composer phpcbf
+```
+
+**Common Script Patterns**:
+- `pre-install-cmd` / `post-install-cmd` - Run before/after `composer install`
+- `pre-update-cmd` / `post-update-cmd` - Run before/after `composer update`
+- `post-autoload-dump` - Run after autoload files are generated
+- Custom scripts - Any command prefixed with `@`
+
+**Best Practices**:
+- Keep scripts simple and focused
+- Use `@` to reference other scripts
+- Add descriptions for all custom scripts
+- Test scripts in all environments
+- Document scripts in project README
+
+### Environment Variables Setup
+
+**Local Development**: Create `.ddev/.env` file for environment-specific variables:
+
+```dotenv
+# Example environment variables
+# API Keys for external services
+EXTERNAL_API_KEY=your_api_key_here
+PAYMENT_GATEWAY_ID=your_gateway_id
+PAYMENT_GATEWAY_SECRET=your_gateway_secret
+
+# Service configurations
+AI_SERVICE_KEY=your_ai_service_key
+THIRD_PARTY_API_TOKEN=your_token
+
+# Platform.sh CLI Token (in ~/.ddev/global_config.yaml instead)
+PLATFORMSH_CLI_TOKEN=your_platform_token
+```
+
+**Important Notes**:
+- Create `.ddev/.env` file and add to `.gitignore`
+- Never commit API keys or secrets to version control
+- Restart DDEV containers after adding/changing variables: `ddev restart`
+- Access in Drupal: `$_ENV['VARIABLE_NAME']` or Settings API
+- Document required variables in project README
+- Store credentials securely (e.g., password manager, Platform.sh environment variables)
+
+**Production/Staging**: Use platform-specific environment variable management (Platform.sh, Acquia, etc.)
+
+### Patch Management
+
+Patches can be applied from various sources: local files, Drupal.org, GitHub, or other URLs.
+
+**Patch Sources**:
+1. **Local patches** - Stored in project repository
+2. **Drupal.org** - Direct links to issue queue patches
+3. **GitHub/GitLab** - Direct links to patch files or commits
+4. **Other URLs** - Any accessible patch file URL
+
+**Directory Structure for Local Patches**:
+- **Core patches**: `./patches/core/`
+- **Contrib patches**: `./patches/contrib/[module_name]/`
+- **Custom patches**: `./patches/custom/`
+
+**Creating Local Patches**:
+
+1. Make changes in the module/core directory
+2. Create patch from git diff:
+   ```bash
+   cd web/modules/contrib/[module_name]
+   git diff > /path/to/project/patches/contrib/[module_name]/patch_name.patch
+   ```
+
+3. Or from specific branch:
+   ```bash
+   git diff BRANCH-NAME path/to/file > ./patches/core/patch_name.patch
+   ```
+
+4. Verify patch file has correct paths (should start with `a/` and `b/`)
+
+**Applying Patches via Composer**:
+
+Add to `composer.json` in the `extra` section:
+```json
+"patches": {
+  "drupal/module_name": {
+    "Local patch - Description": "patches/contrib/module_name/patch_file.patch",
+    "Drupal.org #1234567 - Fix for bug": "https://www.drupal.org/files/issues/2024-01-15/module_name-fix-bug-1234567-2.patch",
+    "GitHub PR #123 - Feature enhancement": "https://patch-diff.githubusercontent.com/raw/user/repo/pull/123.patch"
+  },
+  "drupal/core": {
+    "Local core patch": "patches/core/core_patch.patch",
+    "Drupal.org #3456789 - Core fix": "https://www.drupal.org/files/issues/2024-02-20/core-fix-3456789-15.patch"
+  }
+}
+```
+
+**Common Patch Sources**:
+
+1. **Drupal.org Issue Queue**:
+   ```json
+   "drupal/webform": {
+     "Issue #3123456 - Fix submission handler": "https://www.drupal.org/files/issues/2024-01-15/webform-fix-handler-3123456-10.patch"
+   }
+   ```
+
+2. **GitHub Pull Request**:
+   ```json
+   "drupal/paragraphs": {
+     "GitHub PR #234 - Add new feature": "https://patch-diff.githubusercontent.com/raw/drupal/paragraphs/pull/234.patch"
+   }
+   ```
+
+3. **Local Project Patch**:
+   ```json
+   "drupal/views": {
+     "Custom fix for project-specific issue": "patches/contrib/views/custom-fix.patch"
+   }
+   ```
+
+**Best Practices**:
+- **Include issue numbers** in descriptions when available (e.g., "Issue #1234567")
+- **Document source** - where the patch came from (Drupal.org, GitHub, custom)
+- **Version in filename** - Use patch version if multiple versions exist (e.g., `-10.patch`)
+- **Test thoroughly** - Test patches on clean install before committing
+- **Monitor upstream** - Check if patches have been committed to upstream regularly
+- **Document in commit** - Explain why patch is needed in commit message
+
+**Patch Format Requirements**:
+- Patches must have correct relative paths
+- Drupal.org patches typically work out of the box
+- GitHub patches may need path adjustments
+- Local patches: use `web/modules/contrib/[module_name]/` prefix (or your web root)
+
+**Finding Patches**:
+
+1. **Drupal.org Issue Queue**:
+   - Navigate to module's issue queue
+   - Find issue with patch
+   - Copy link to `.patch` file (not `.patch.txt`)
+   - Use the latest patch version when multiple exist
+
+2. **GitHub**:
+   - For pull requests: `https://patch-diff.githubusercontent.com/raw/[owner]/[repo]/pull/[PR-number].patch`
+   - For commits: `https://github.com/[owner]/[repo]/commit/[commit-hash].patch`
+
+3. **Creating Custom**:
+   - Make changes locally
+   - Generate patch with `git diff`
+   - Store in project's `patches/` directory
+
+**Updating/Removing Patches**:
+```bash
+# Remove patch entry from composer.json
+# Then update the package
+ddev composer update drupal/module_name
+
+# If patch was the only change, may need to reinstall
+ddev composer reinstall drupal/module_name
+
+# Test thoroughly after removing patches
+ddev drush cr
+```
+
+**Troubleshooting Patch Application**:
+
+1. **Patch fails to apply**:
+   - Check if module version matches patch
+   - Try different patch version from issue queue
+   - Patch may already be in newer version (check CHANGELOG)
+
+2. **Hunk failures**:
+   - Code has changed since patch was created
+   - Look for newer patch version
+   - May need to manually apply or create new patch
+
+3. **Path issues**:
+   - Adjust patch paths if needed
+   - Use `patches-file` composer plugin for complex scenarios
+
+**Monitoring Patches**:
+- Regularly check if patches have been committed upstream
+- Update module versions when patches are no longer needed
+- Document patch status in project documentation
+
+## Code Quality Tools
+
+Maintain code quality by running these tools regularly during development.
+
+### PHPStan Static Analysis
+
+**Purpose**: Catch bugs and type errors before runtime
+
+```bash
+# If custom DDEV command exists
+ddev phpstan
+
+# Manual execution
+ddev exec vendor/bin/phpstan analyze web/modules/custom --level=1
+
+# Analyze specific module
+ddev exec vendor/bin/phpstan analyze web/modules/custom/[module_name]
+
+# Higher analysis level (stricter)
+ddev exec vendor/bin/phpstan analyze web/modules/custom --level=5
+```
+
+**When to run**:
+- Before committing code
+- After adding new methods or classes
+- When refactoring existing code
+- During code review
+
+### PHP CodeSniffer (Drupal Standards)
+
+**Purpose**: Enforce Drupal coding standards
+
+```bash
+# Check coding standards
+ddev exec vendor/bin/phpcs --standard=Drupal web/modules/custom/
+
+# Check specific module
+ddev exec vendor/bin/phpcs --standard=Drupal web/modules/custom/[module_name]
+
+# Check with detailed report
+ddev exec vendor/bin/phpcs --standard=Drupal --report=full web/modules/custom/
+```
+
+**When to run**:
+- Before committing code
+- After writing new code
+- Before creating pull requests
+
+### PHP Code Beautifier and Fixer
+
+**Purpose**: Automatically fix coding standard violations
+
+```bash
+# Auto-fix coding standards
+ddev exec vendor/bin/phpcbf --standard=Drupal web/modules/custom/
+
+# Fix specific module
+ddev exec vendor/bin/phpcbf --standard=Drupal web/modules/custom/[module_name]
+```
+
+**When to run**:
+- After PHPSniffer identifies fixable issues
+- Before final commit
+- To quickly format new code
+
+### Rector Code Modernization
+
+**Purpose**: Automatically upgrade code to newer PHP/Drupal versions
+
+```bash
+# Dry run (preview changes)
+ddev ssh
+vendor/bin/rector process web/modules/custom/module_name --dry-run
+
+# Apply changes
+vendor/bin/rector process web/modules/custom/module_name
+
+# Process entire custom modules directory
+vendor/bin/rector process web/modules/custom
+```
+
+**When to run**:
+- When upgrading PHP version
+- When upgrading Drupal major version
+- To modernize legacy code
+- Always test thoroughly after applying changes
+
+### Upgrade Status Module
+
+**Purpose**: Check Drupal 10/11 compatibility and identify deprecated code
+
+```bash
+# Install Upgrade Status module
+ddev composer require drupal/upgrade_status
+ddev drush pm:enable upgrade_status
+
+# Check compatibility via UI
+# Visit: /admin/reports/upgrade-status
+
+# Check specific project via Drush
+ddev drush upgrade_status:analyze [project_name]
+
+# Check all custom modules
+ddev drush upgrade_status:analyze --all
+
+# Export report
+ddev drush upgrade_status:analyze --all --format=json > upgrade-status.json
+```
+
+**What it checks**:
+- Deprecated code usage
+- Drupal 10/11 compatibility issues
+- PHP version compatibility
+- Contrib module compatibility
+- Custom code issues
+
+**Use with Rector**:
+1. Run Upgrade Status to identify issues
+2. Use Rector to automatically fix many deprecations
+3. Manually fix remaining issues
+4. Re-run Upgrade Status to verify
+
+**When to run**:
+- Before upgrading Drupal major version
+- Quarterly maintenance check
+- After adding new contrib modules
+- During code review process
+
+### Configuration Files
+
+- **PHPStan**: `phpstan.neon` or `phpstan.neon.dist`
+- **PHP CodeSniffer**: `phpcs.xml` or `phpcs.xml.dist`
+- **Rector**: `rector.php`
+- **Upgrade Status**: Web UI at `/admin/reports/upgrade-status`
+
+Customize these files based on project needs.
+
+## Testing
+
+Comprehensive testing ensures code quality and prevents regressions.
+
+### PHPUnit (Unit and Kernel Tests)
+
+**Purpose**: Test individual components and Drupal integration
+
+```bash
+# Run all PHPUnit tests
+ddev exec vendor/bin/phpunit web/modules/custom
+
+# Run specific module tests
+ddev exec vendor/bin/phpunit web/modules/custom/[module_name]/tests
+
+# Run specific test class
+ddev exec vendor/bin/phpunit web/modules/custom/[module_name]/tests/src/Unit/MyTest.php
+
+# Run with coverage report
+ddev exec vendor/bin/phpunit --coverage-html coverage web/modules/custom
+```
+
+**Test Types**:
+- **Unit Tests**: Test individual classes/methods in isolation (`tests/src/Unit/`)
+- **Kernel Tests**: Test with minimal Drupal bootstrap (`tests/src/Kernel/`)
+- **Functional Tests**: Full Drupal installation tests (`tests/src/Functional/`)
+- **FunctionalJavaScript**: Tests with JavaScript support (`tests/src/FunctionalJavascript/`)
+
+### Codeception (Acceptance/Functional Tests)
+
+**Purpose**: End-to-end testing from user perspective
+
+```bash
+# Run all Codeception tests
+ddev exec vendor/bin/codecept run
+
+# Run specific suite
+ddev exec vendor/bin/codecept run acceptance
+ddev exec vendor/bin/codecept run functional
+ddev exec vendor/bin/codecept run unit
+
+# Run specific test
+ddev exec vendor/bin/codecept run acceptance LoginCest
+
+# Run with detailed output
+ddev exec vendor/bin/codecept run --steps --debug
+
+# Generate HTML report
+ddev exec vendor/bin/codecept run --html
+```
+
+**Test Organization**:
+```
+tests/
+├── acceptance/          # Browser-based acceptance tests
+├── functional/          # Functional tests without JavaScript
+├── unit/               # Unit tests
+├── _support/           # Helper classes and support code
+├── _data/              # Test fixtures and data
+├── _output/            # Test results and screenshots
+└── codeception.yml     # Configuration
+```
+
+### Test Best Practices
+
+**Writing Tests**:
+- Keep tests focused and atomic (one concept per test)
+- Use descriptive test method names: `testUserCanLoginWithValidCredentials()`
+- Add proper PHPDoc comments explaining what is being tested
+- Follow AAA pattern: Arrange, Act, Assert
+- Clean up test data in tearDown() methods
+- Use data providers for testing multiple scenarios
+- Test both positive (success) and negative (failure) scenarios
+
+**Test Data**:
+- Use fixtures for consistent test data
+- Avoid dependencies between tests
+- Reset state between tests
+- Use factories or builders for complex test objects
+
+**Assertions**:
+```php
+// PHPUnit assertions
+$this->assertEquals($expected, $actual);
+$this->assertTrue($condition);
+$this->assertInstanceOf(ClassName::class, $object);
+$this->assertCount(3, $array);
+$this->assertStringContainsString('needle', $haystack);
+```
+
+**When to Run Tests**:
+- Before committing code
+- After fixing bugs (write test first)
+- After refactoring
+- Before deploying to production
+- In CI/CD pipeline automatically
+
+### Debugging Failed Tests
+
+```bash
+# Run single test with verbose output
+ddev exec vendor/bin/phpunit --testdox --verbose [test-file]
+
+# Codeception with debugging
+ddev exec vendor/bin/codecept run --debug
+
+# Generate fresh screenshots on failure
+ddev exec vendor/bin/codecept run --steps
+```
+
+Check test output, logs, and screenshots in `tests/_output/` directory.
+
+## Debugging
+
+### Xdebug
+
+**Enable/Disable**:
+```bash
+# Enable Xdebug
+ddev xdebug on
+
+# Disable Xdebug (improves performance)
+ddev xdebug off
+
+# Check Xdebug status
+ddev exec php -v | grep Xdebug
+```
+
+**IDE Configuration**:
+- PhpStorm: Configure PHP > Debug > Xdebug port 9003
+- VS Code: Install PHP Debug extension
+- Set breakpoints in your IDE
+- Start listening for debug connections
+
+**Performance Note**: Disable Xdebug when not actively debugging to improve performance.
+
+### Container Access
+
+```bash
+# SSH into web container
+ddev ssh
+
+# SSH as root user
+ddev ssh -s db
+
+# Execute command without SSH
+ddev exec [command]
+
+# Run composer commands
+ddev composer [command]
+```
+
+### Database Access
+
+```bash
+# MySQL CLI
+ddev mysql
+
+# Access specific database (multisite)
+ddev mysql -D [database_name]
+
+# Execute SQL query directly
+ddev mysql -e "SELECT * FROM node_field_data LIMIT 5;"
+
+# Export database
+ddev export-db --file=backup.sql.gz
+
+# Import database
+ddev import-db --file=backup.sql.gz
+```
+
+### Logs and Monitoring
+
+```bash
+# View container logs
+ddev logs
+
+# Follow logs in real-time
+ddev logs -f
+
+# View Drupal watchdog logs
+ddev drush watchdog:show
+
+# Tail recent watchdog entries
+ddev drush watchdog:show --count=50 --severity=Error
+
+# View PHP error log
+ddev exec tail -f /var/log/php/php-fpm.log
+```
+
+### Cache and State Debugging
+
+```bash
+# Clear specific cache bin
+ddev drush cache:clear [bin_name]
+
+# Rebuild cache (synonym for cr)
+ddev drush cache:rebuild
+
+# Clear Twig cache specifically
+ddev drush twig:debug
+
+# Get state value
+ddev drush state:get [key]
+
+# Set state value
+ddev drush state:set [key] [value]
+
+# Delete state value
+ddev drush state:delete [key]
+```
+
+### Performance Profiling
+
+```bash
+# Check Redis status (if using Redis)
+ddev redis-cli
+# Then: INFO stats
+
+# Monitor disk usage
+ddev exec df -h
+
+# Check memory usage
+ddev exec free -m
+
+# Top processes
+ddev exec top
+
+# Check PHP memory limit
+ddev exec php -i | grep memory_limit
+```
+
+### Network Debugging
+
+```bash
+# Check network connectivity from container
+ddev exec curl -I https://example.com
+
+# Test DNS resolution
+ddev exec nslookup example.com
+
+# Check open ports
+ddev exec netstat -tulpn
+```
+
+### Debugging Tips
+
+- Use `ddev describe` to see all project URLs and services
+- Check `.ddev/config.yaml` for project configuration
+- Review `ddev logs` when containers fail to start
+- Use `ddev debug` for DDEV-specific issues
+- Enable Twig debugging in `development.services.yml`
+
+## Performance and Monitoring
+
+### Cache Management
+
+```bash
+# Clear all caches
+ddev drush cache:rebuild
+# Alias: ddev drush cr
+
+# Clear specific cache bins
+ddev drush cache:clear render
+ddev drush cache:clear dynamic_page_cache
+ddev drush cache:clear config
+
+# List all cache bins
+ddev drush cache:clear
+
+# Disable caches for development (in development.services.yml)
+# parameters:
+#   twig.config:
+#     debug: true
+#     auto_reload: true
+#     cache: false
+```
+
+### Redis Monitoring
+
+```bash
+# Access Redis CLI
+ddev redis-cli
+
+# Check Redis stats
+ddev redis-cli INFO stats
+
+# Check memory usage
+ddev redis-cli INFO memory
+
+# Monitor commands in real-time
+ddev redis-cli MONITOR
+
+# Check connected clients
+ddev redis-cli CLIENT LIST
+
+# Flush Redis cache
+ddev redis-cli FLUSHALL
+```
+
+### Performance Metrics
+
+```bash
+# Check disk usage
+ddev exec df -h
+
+# Check specific directory size
+ddev exec du -sh web/sites/default/files
+
+# Check memory usage
+ddev exec free -m
+
+# Monitor CPU and memory in real-time
+ddev exec top
+
+# Check PHP-FPM status
+ddev exec curl http://localhost/fpm-status
+
+# Check PHP memory limit
+ddev exec php -i | grep memory_limit
+```
+
+### Database Performance
+
+```bash
+# Check database size
+ddev mysql -e "SELECT table_schema AS 'Database', ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) AS 'Size (MB)' FROM information_schema.TABLES GROUP BY table_schema;"
+
+# Show slow queries log
+ddev mysql -e "SHOW VARIABLES LIKE 'slow_query%';"
+
+# Optimize tables
+ddev drush sql:query "OPTIMIZE TABLE cache_bootstrap, cache_config, cache_container, cache_data, cache_default, cache_discovery, cache_dynamic_page_cache, cache_entity, cache_menu, cache_render, cache_toolbar;"
+
+# Show table sizes
+ddev mysql -e "SELECT table_name AS 'Table', round(((data_length + index_length) / 1024 / 1024), 2) 'Size in MB' FROM information_schema.TABLES WHERE table_schema = DATABASE() ORDER BY (data_length + index_length) DESC;"
+```
+
+### Performance Monitoring Commands
+
+```bash
+# Check Drupal cron status
+ddev drush core:cron
+
+# View system status
+ddev drush status
+
+# Check for pending updates
+ddev drush updatedb:status
+
+# Profile page load with Drush
+ddev drush php:eval "timer_start('test'); node_load(1); \$time = timer_stop('test'); print(\$time['time'] . ' ms');"
+```
+
+### Optimization Checklist
+
+- **Caching**:
+  - Enable page caching for anonymous users
+  - Enable dynamic page cache
+  - Use Redis/Memcache for backend caching
+  - Configure appropriate cache max-age
+
+- **Aggregation**:
+  - Enable CSS aggregation
+  - Enable JavaScript aggregation
+  - Consider using AdvAgg module for advanced aggregation
+
+- **Database**:
+  - Regular cache table truncation
+  - Optimize tables periodically
+  - Monitor slow queries
+  - Consider read replicas for high traffic
+
+- **File System**:
+  - Use CDN for static assets
+  - Optimize images (use image styles)
+  - Enable lazy loading for images
+  - Clean up old files regularly
+
+- **Code**:
+  - Use dependency injection
+  - Implement proper caching strategies
+  - Avoid loading unnecessary entities
+  - Use Queue API for heavy operations
+
+## Code Standards
+
+### Core Principles
+
+- **SOLID**: Follow SOLID principles for object-oriented programming
+- **DRY**: Extract repeated logic into reusable functions, methods, or classes
+- **PHP Version**: PHP 8.1+ with strict typing: `declare(strict_types=1);`
+- **Drupal Standards**: Follow Drupal coding standards (PSR-12 based)
+- **Language**: All code comments and documentation must be in English
+
+### Module Structure
+
+**Custom modules** must be placed in `/web/modules/custom/` (or `/[your-webroot]/modules/custom/`) and follow this structure:
+```
+[prefix]_[module_name]/
+├── [prefix]_[module_name].info.yml      # Module definition
+├── [prefix]_[module_name].module         # Module hooks and functions
+├── [prefix]_[module_name].install        # Install/update hooks
+├── [prefix]_[module_name].routing.yml    # Route definitions
+├── [prefix]_[module_name].permissions.yml # Permission definitions
+├── [prefix]_[module_name].services.yml   # Service definitions
+├── [prefix]_[module_name].libraries.yml  # Asset library definitions
+├── src/                          # PHP classes (PSR-4)
+│   ├── Entity/                   # Entity classes
+│   ├── Form/                     # Form classes
+│   ├── Controller/               # Controller classes
+│   └── Plugin/                   # Plugin implementations
+├── templates/                    # Twig templates
+├── css/                         # Stylesheets
+└── js/                          # JavaScript files
+```
+
+**Module Naming**: Follow `[prefix]_[descriptive_name]` pattern (e.g., `myproject_`, `custom_`, `d_`)
+
+**Why use a prefix?**
+- Prevents naming conflicts with contributed modules
+- Groups your custom modules together
+- Makes it clear which modules are custom vs. contrib
+- Recommended: `d_` as default prefix for Droptica projects
+
+**PSR-4 Autoloading**:
+
+Drupal follows PSR-4 autoloading standard for classes in the `src/` directory:
+
+```
+[prefix]_[module_name]/
+├── src/
+│   ├── Entity/              # Namespace: \Drupal\[prefix]_[module_name]\Entity
+│   │   └── CustomEntity.php # Class: \Drupal\[prefix]_[module_name]\Entity\CustomEntity
+│   ├── Form/                # Namespace: \Drupal\[prefix]_[module_name]\Form
+│   │   └── SettingsForm.php # Class: \Drupal\[prefix]_[module_name]\Form\SettingsForm
+│   ├── Controller/          # Namespace: \Drupal\[prefix]_[module_name]\Controller
+│   │   └── PageController.php
+│   ├── Plugin/              # Namespace: \Drupal\[prefix]_[module_name]\Plugin
+│   │   ├── Block/          # \Drupal\[prefix]_[module_name]\Plugin\Block
+│   │   └── Field/
+│   │       └── FieldWidget/
+│   └── Service/             # Custom services
+│       └── CustomService.php
+```
+
+**Namespace Rules**:
+- Base namespace: `Drupal\[module_name]`
+- Subdirectory becomes part of namespace
+- Class name must match filename
+- One class per file
+
+**Example**:
+```php
+<?php
+
+namespace Drupal\my_module\Controller;
+
+use Drupal\Core\Controller\ControllerBase;
+
+class MyController extends ControllerBase {
+  // Controller code
+}
+```
+
+**Directory Purpose**:
+- `Entity/` - Custom entity classes and interfaces
+- `Form/` - Form classes (ConfigFormBase, FormBase)
+- `Controller/` - Page controllers and route controllers
+- `Plugin/` - Plugin implementations (Block, Field, etc.)
+  - `Plugin/Block/` - Custom block plugins
+  - `Plugin/Field/FieldWidget/` - Custom field widgets
+  - `Plugin/Field/FieldFormatter/` - Custom field formatters
+- `Service/` - Custom service classes
+- `EventSubscriber/` - Event subscriber classes
+- `Access/` - Access checkers
+- `Routing/` - Route subscribers
+
+### Entity Development Patterns
+
+#### 1. Constants Instead of Magic Numbers
+
+```php
+// ✅ Good: Define constants in .module file
+define('ENTITY_STATUS_DRAFT', 0);
+define('ENTITY_STATUS_PUBLISHED', 1);
+define('ENTITY_STATUS_ARCHIVED', 2);
+
+// Use in field definitions
+->setSettings([
+  'allowed_values' => [
+    ENTITY_STATUS_DRAFT => 'Draft',
+    ENTITY_STATUS_PUBLISHED => 'Published',
+    ENTITY_STATUS_ARCHIVED => 'Archived',
+  ],
+])
+
+// Use in business logic
+if ($entity->getStatus() == ENTITY_STATUS_PUBLISHED) {
+  // Handle published entity
+}
+```
+
+#### 2. Getter Methods Instead of Direct Field Access
+
+```php
+// ✅ Good: Create dedicated getter method
+/**
+ * Get the entity status.
+ *
+ * @return int
+ *   The status value.
+ */
+public function getStatus(): int {
+  return (int) $this->get('status')->value;
+}
+
+// Always declare in entity interface
+public function getStatus(): int;
+```
+
+#### 3. Production-Safe Migrations
+
+```php
+// ✅ Good: Safe migration with backward compatibility
+function [module]_update_XXXX() {
+  $entity_definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+
+  $field_storage_definition = $entity_definition_update_manager
+    ->getFieldStorageDefinition('field_name', 'entity_type');
+
+  if ($field_storage_definition) {
+    $new_definition = BaseFieldDefinition::create('field_type')
+      ->setSettings([
+        'allowed_values' => [
+          CONSTANT_OLD => 'Old Value',
+          CONSTANT_NEW => 'New Value', // New option
+        ],
+      ]);
+
+    $entity_definition_update_manager->updateFieldStorageDefinition($new_definition);
+    drupal_flush_all_caches();
+    \Drupal::logger('module_name')->info('Migration completed successfully.');
+  }
+}
+
+// Use >= comparison for backward compatibility
+if ($entity->getFieldValue() >= CONSTANT_MIN_VALUE) {
+  // Works with both old and new values
+}
+```
+
+**Migration Safety Checklist**:
+- ✅ Backup database before running migrations
+- ✅ Test on staging first
+- ✅ Ensure backward compatibility
+- ✅ Include error handling and logging
+- ✅ Clear caches after schema changes
+- ✅ Have rollback plan
+
+### Drupal Best Practices
+
+Follow these Drupal-specific patterns for maintainable, secure code.
+
+#### Database API
+
+**Always use database API, never raw SQL**:
+
+```php
+// ✅ Good: Use database API
+$query = \Drupal::database()->select('node_field_data', 'n')
+  ->fields('n', ['nid', 'title'])
+  ->condition('n.status', 1)
+  ->condition('n.type', 'article')
+  ->range(0, 10);
+$results = $query->execute()->fetchAll();
+
+// ✅ Good: Use placeholders for dynamic values
+$results = \Drupal::database()->query(
+  "SELECT nid, title FROM {node_field_data} WHERE status = :status",
+  [':status' => 1]
+)->fetchAll();
+
+// ❌ Bad: Raw SQL without placeholders (SQL injection risk)
+$results = \Drupal::database()->query(
+  "SELECT nid, title FROM node_field_data WHERE status = " . $status
+);
+```
+
+#### Service Container and Dependency Injection
+
+**Use dependency injection in classes**:
+
+```php
+// ✅ Good: Dependency injection in service
+namespace Drupal\my_module\Service;
+
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
+
+class MyService {
+
+  public function __construct(
+    private readonly EntityTypeManagerInterface $entityTypeManager,
+    private readonly ConfigFactoryInterface $configFactory,
+  ) {}
+
+  public function doSomething() {
+    $storage = $this->entityTypeManager->getStorage('node');
+    // Use $storage
+  }
+}
+
+// ❌ Bad: Using \Drupal static calls in classes
+class MyService {
+  public function doSomething() {
+    $storage = \Drupal::entityTypeManager()->getStorage('node');
+  }
+}
+```
+
+#### Caching API
+
+**Implement proper caching strategies**:
+
+```php
+// ✅ Good: Use cache with tags and contexts
+$cache_tags = ['node:' . $node->id()];
+$cache_contexts = ['user', 'url.path'];
+
+$build = [
+  '#markup' => $content,
+  '#cache' => [
+    'tags' => $cache_tags,
+    'contexts' => $cache_contexts,
+    'max-age' => 3600,
+  ],
+];
+
+// Invalidate specific cache tags
+\Drupal\Core\Cache\Cache::invalidateTags(['node:' . $node->id()]);
+
+// Get from cache
+$cid = 'my_module:my_data:' . $key;
+if ($cache = \Drupal::cache()->get($cid)) {
+  return $cache->data;
+}
+
+// Set cache
+\Drupal::cache()->set($cid, $data, time() + 3600, ['my_module']);
+```
+
+#### Queue API
+
+**Use queues for heavy operations**:
+
+```php
+// Define queue in [module].services.yml
+// services:
+//   queue.my_module_processor:
+//     class: Drupal\Core\Queue\DatabaseQueue
+//     factory: ['@queue', 'get']
+//     arguments: ['my_module_processor']
+
+// Add item to queue
+$queue = \Drupal::queue('my_module_processor');
+$queue->createItem(['data' => $data]);
+
+// Process queue in QueueWorker plugin
+/**
+ * @QueueWorker(
+ *   id = "my_module_processor",
+ *   title = @Translation("My Module Processor"),
+ *   cron = {"time" = 60}
+ * )
+ */
+class MyModuleProcessor extends QueueWorkerBase {
+  public function processItem($data) {
+    // Process item
+  }
+}
+```
+
+#### Entity System
+
+**Use entity API properly**:
+
+```php
+// ✅ Good: Use entity type manager
+$node_storage = \Drupal::entityTypeManager()->getStorage('node');
+
+// Load entity
+$node = $node_storage->load($nid);
+
+// Load multiple entities
+$nodes = $node_storage->loadMultiple([1, 2, 3]);
+
+// Query entities
+$query = $node_storage->getQuery()
+  ->condition('type', 'article')
+  ->condition('status', 1)
+  ->accessCheck(TRUE)  // Always include access check
+  ->sort('created', 'DESC')
+  ->range(0, 10);
+$nids = $query->execute();
+
+// Create entity
+$node = $node_storage->create([
+  'type' => 'article',
+  'title' => 'My Title',
+  'field_my_field' => 'value',
+]);
+$node->save();
+```
+
+#### Form API
+
+**Build forms with proper validation**:
+
+```php
+namespace Drupal\my_module\Form;
+
+use Drupal\Core\Form\FormBase;
+use Drupal\Core\Form\FormStateInterface;
+
+class MyForm extends FormBase {
+
+  public function getFormId() {
+    return 'my_module_my_form';
+  }
+
+  public function buildForm(array $form, FormStateInterface $form_state) {
+    $form['name'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Name'),
+      '#required' => TRUE,
+    ];
+
+    $form['email'] = [
+      '#type' => 'email',
+      '#title' => $this->t('Email'),
+      '#required' => TRUE,
+    ];
+
+    $form['submit'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Submit'),
+    ];
+
+    return $form;
+  }
+
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    $email = $form_state->getValue('email');
+    if (!\Drupal::service('email.validator')->isValid($email)) {
+      $form_state->setErrorByName('email', $this->t('Invalid email address.'));
+    }
+  }
+
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+    $values = $form_state->getValues();
+    // Process form submission
+    \Drupal::messenger()->addStatus($this->t('Form submitted successfully.'));
+  }
+}
+```
+
+#### Translation API
+
+**Make all user-facing strings translatable**:
+
+```php
+// ✅ Good: Use t() or TranslatableMarkup
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+
+$message = $this->t('Hello @name', ['@name' => $name]);
+
+// For complex strings
+$markup = new TranslatableMarkup('Welcome to @site', [
+  '@site' => $site_name,
+]);
+
+// In render arrays
+$build['message'] = [
+  '#markup' => $this->t('Welcome!'),
+];
+
+// ❌ Bad: Hardcoded English strings
+$message = "Hello " . $name;
+```
+
+#### Configuration Management
+
+**Use configuration API for settings**:
+
+```php
+// Get configuration
+$config = \Drupal::config('my_module.settings');
+$value = $config->get('my_setting');
+
+// Set configuration (editable)
+$config = \Drupal::configFactory()->getEditable('my_module.settings');
+$config->set('my_setting', $value);
+$config->save();
+
+// In services with dependency injection
+public function __construct(ConfigFactoryInterface $config_factory) {
+  $this->config = $config_factory->get('my_module.settings');
+}
+```
+
+### Form Development
+
+- Use Drupal's Form API states system for conditional fields
+- Implement proper form validation
+- Follow Drupal's form building patterns
+- Use field groups for organizing form elements
+- Implement proper access checks for form operations
+
+### Logging Standards
+
+- Implement comprehensive logging for debugging
+- Use Drupal's logger service: `\Drupal::logger('module_name')->notice()`
+- Log important actions and state changes
+- Include relevant data in log messages for debugging
+
+### Code Style
+
+- **Type Declarations**: Always use explicit return type declarations
+- **Type Hints**: Use appropriate PHP type hints for method parameters
+- **PHPDoc**: Provide complete documentation for classes, methods, properties
+- **Array Alignment**: Always align `=>` in multi-line array declarations
+- **Variable Alignment**: Always align `=` in sequential variable definitions
+- **Controllers**: Should be final classes, use dependency injection, keep thin
+- **Services**: Register in `services.yml`, keep focused on single responsibility
+
+### Entity Updates
+
+- All entity structure changes must include update hooks in module `.install` file
+- Follow Drupal's update hook system
+- Maintain backward compatibility
+
+### Role Permissions Management
+
+```php
+// Grant permissions
+user_role_grant_permissions($role_id, [$permission_array]);
+
+// Revoke permissions
+user_role_revoke_permissions($role_id, [$permission_array]);
+
+// Check permissions
+user_role_permissions($role_id);
+
+// Common roles: [list project-specific roles]
+// Built-in roles: Use constants like AccountInterface::AUTHENTICATED_ROLE for authenticated users
+// Always include drupal_flush_all_caches() after permission changes
+```
+
+## Directory Structure
+
+### Key Directories
+
+- **Web Root**: `/web/` (or `/docroot/`, `/html/` - see "Web Root Directory" section)
+- **Custom Modules**: `/web/modules/custom/`
+- **Configuration**: `/config/sync/` (or `/config/[site.domain]/` for multisite)
+- **Settings**: `/web/sites/default/settings.php`
+- **Patches**: `/patches/` organized by core/contrib
+- **Tests**: `/tests/`
+- **Build Scripts**: `/build/` or `/scripts/`
+- **Tools**: `/tools/`
+
+### Finding Functionality
+
+- **[Feature 1]**: `/web/modules/custom/[module]/`
+- **[Feature 2]**: `/web/modules/custom/[module]/`
+- **Site configuration**: `/config/sync/`
+- **Custom theme**: `/web/themes/custom/[theme_name]/`
+- **Testing**: `/tests/`
+
+### Common Development Paths
+
+- **Adding routes**: Module `routing.yml` files
+- **Creating forms**: Module `src/Form/` directories
+- **Entity definitions**: Module `src/Entity/` directories
+- **Custom permissions**: Module `permissions.yml` files
+- **Database updates**: Module `.install` files
+
+## Multilingual Configuration
+
+Quick reference for multilingual Drupal setup. For comprehensive guide, see [Drupal Multilingual Documentation](https://www.drupal.org/docs/multilingual-guide).
+
+### Quick Start
+
+**Enable Core Modules**:
+```bash
+ddev drush pm:enable language locale content_translation config_translation
+ddev drush cr
+```
+
+**Add Languages**:
+```bash
+ddev drush language:add pl
+ddev drush language:add es
+# Or via UI: /admin/config/regional/language/add
+```
+
+**Check Current Setup**:
+```bash
+ddev drush language:list
+ddev drush config:get system.site default_langcode
+ddev drush config:get language.content_settings.node.*
+```
+
+### Language Detection
+
+**Configure at**: `/admin/config/regional/language/detection`
+
+**Recommended Order**:
+1. **URL** - Use path prefix (`/en/`, `/pl/`) for SEO benefits
+2. User preference
+3. Session
+4. Browser detection
+
+**URL Prefix Configuration**:
+```bash
+# English: example.com/en/page
+# Polish: example.com/pl/page
+```
+
+### Enable Content Translation
+
+**Content Types**:
+```bash
+# Via Drush
+ddev drush config:set language.content_settings.node.article third_party_settings.content_translation.enabled true
+
+# Via UI: Structure > Content types > [Type] > Edit > Language settings
+```
+
+**Custom Entities**:
+```php
+/**
+ * @ContentEntityType(
+ *   translatable = TRUE,
+ * )
+ */
+$fields['name'] = BaseFieldDefinition::create('string')
+  ->setTranslatable(TRUE);
+```
+
+### Translation Workflows
+
+**Manual Translation**:
+1. Create content in default language
+2. Edit content > Translate tab
+3. Add translation for each language
+
+**TMGMT Module** (bulk translation):
+```bash
+ddev composer require drupal/tmgmt
+ddev drush pm:enable tmgmt tmgmt_content
+# Configure at /admin/tmgmt
+```
+
+### Interface Translation
+
+```bash
+# Update translations
+ddev drush locale:check
+ddev drush locale:update
+
+# Translate custom strings at /admin/config/regional/translate
+```
+
+### Language Switcher
+
+**Enable Block**: Structure > Block layout > Place "Language switcher" block
+
+**Custom Switcher**:
+```php
+function custom_language_switcher() {
+  $languages = \Drupal::languageManager()->getLanguages();
+  $links = [];
+  foreach ($languages as $lang) {
+    $links[$lang->getId()] = [
+      'title' => $lang->getName(),
+      'url' => \Drupal::url('<current>', [], ['language' => $lang]),
+    ];
+  }
+  return ['#theme' => 'links', '#links' => $links];
+}
+```
+
+### Best Practices
+
+- ✅ Use URL prefix for SEO (`/en/`, `/pl/`)
+- ✅ Enable translation for all content types, taxonomies, menus
+- ✅ Implement hreflang tags (see SEO section)
+- ✅ Use `t()` and `TranslatableMarkup` for all strings
+- ✅ Test with `drush locale:check` regularly
+- ✅ Enable language cache contexts
+
+### Common Issues
+
+**Missing translations**: `ddev drush locale:update`
+**Content not translatable**: Check Language settings tab on content type
+**Switcher not working**: Verify URL-based detection is enabled
+**Fields not translatable**: Edit field > Enable translation
+
+### Quick Reference
+
+```php
+// In code
+$this->t('Hello @name', ['@name' => $name]);
+new TranslatableMarkup('Welcome!');
+
+// In Twig
+{{ 'Hello World'|trans }}
+{{ 'Hello @name'|trans({'@name': name}) }}
+```
+
+**Document your project languages in Project Overview section above.**
+
+## Configuration Management
+
+### Config Export/Import
+
+```bash
+# Export configuration
+ddev drush cex
+
+# Import configuration
+ddev drush cim
+
+# Show config differences
+ddev drush config:status
+```
+
+### Config Split (environment-specific configuration)
+
+<!--
+Uncomment this section if using config_split module
+-->
+
+<!--
+The project uses `config_split` module to manage environment-specific configuration.
+
+**Config Split Structure**:
+```
+config/
+├── sync/              # Shared configuration (all environments)
+├── dev/               # Development-only configuration
+├── staging/           # Staging-specific configuration
+└── prod/              # Production-specific configuration
+```
+
+**Enable/Disable Config Splits**:
+```bash
+# Enable development split
+ddev drush config-split:export dev
+
+# Activate specific split
+ddev drush csex dev
+
+# Deactivate split
+ddev drush config-split:deactivate dev
+```
+
+**Common Use Cases**:
+- **Development split**: Development modules (devel, webprofiler, stage_file_proxy)
+- **Production split**: Production-only modules (purge, cdn, shield)
+- **Environment-specific settings**: Different API endpoints, debug settings
+
+**Configuration**:
+- Create config split at: `/admin/config/development/configuration/config-split`
+- Add modules to blacklist (exclude from main config)
+- Or add modules to graylist (override in split)
+- Export configuration: `ddev drush cex`
+-->
+
+### Config Ignore (if using config_ignore module)
+
+<!--
+The project uses the `config_ignore` module to exclude certain configuration entities from being exported/imported. This is important for configurations that are site-specific or managed manually.
+
+**Config Ignore Settings**:
+- Location: `/config/sync/config_ignore.settings.yml`
+- Common ignored patterns:
+  - [List patterns specific to your project]
+-->
+
+## Security
+
+### Security Best Practices
+
+- Follow Drupal's security best practices
+- Implement proper access control and permission checks
+- Use Drupal's security features for form validation and CSRF protection
+- HTTPS redirect must remain present
+- Sanitize all user input
+- Use Drupal's database abstraction layer to prevent SQL injection
+- Never store sensitive data in configuration
+- Use environment variables for API keys and secrets
+
+### Security Update Commands
+
+```bash
+# Check for security updates
+ddev drush pm:security
+
+# Check for available updates
+ddev drush pm:security-php
+
+# Update Drupal core (security updates)
+ddev composer update drupal/core-recommended --with-dependencies
+
+# Update all modules (security only)
+ddev composer update --security-only
+
+# Update specific module with dependencies
+ddev composer update drupal/[module_name] --with-dependencies
+
+# After updates, run database updates
+ddev drush updatedb
+
+# Clear caches
+ddev drush cr
+```
+
+### Security Audit
+
+```bash
+# Review enabled modules
+ddev drush pm:list --status=enabled
+
+# Check user permissions
+ddev drush role:list
+
+# View user roles and permissions
+ddev drush role:perm:list
+
+# Review users with admin access
+ddev drush user:information --uid=1
+
+# Check file permissions
+ddev exec ls -la web/sites/default/
+
+# Review security-related configuration
+ddev drush config:get system.site page.403
+ddev drush config:get system.site page.404
+```
+
+### Security Hardening
+
+**File Permissions**:
+- Settings files should be read-only: `chmod 444 settings.php`
+- Files directory should not be executable: `chmod 755 sites/default/files`
+- Never make web root writable by web server
+
+**Configuration**:
+- Disable PHP execution in files directory
+- Configure .htaccess properly
+- Enable security headers
+- Use strong session settings
+- Implement rate limiting for forms
+
+**Code Security**:
+- Always use parameter placeholders in database queries
+- Escape output: Use `\Drupal\Component\Utility\Html::escape()`
+- Validate input: Use Form API validation
+- Check permissions: Use `$account->hasPermission()`
+- Sanitize URLs: Use `\Drupal\Core\Url::fromUri()`
+
+### Security Monitoring
+
+```bash
+# Review watchdog for security events
+ddev drush watchdog:show --severity=Error --count=100
+
+# Check failed login attempts
+ddev drush sql:query "SELECT * FROM watchdog WHERE type='user' AND message LIKE '%Failed login%' ORDER BY wid DESC LIMIT 20;"
+
+# Review access logs (if available)
+ddev exec tail -n 100 /var/log/nginx/access.log
+```
+
+## Headless/API-First Development
+
+### JSON:API (Core Module)
+
+**JSON:API** is included in Drupal core and provides a complete REST API for all content entities.
+
+**Enable JSON:API**:
+```bash
+# Enable module
+ddev drush pm:enable jsonapi
+
+# Optional: Enable extras module for better DX
+ddev composer require drupal/jsonapi_extras
+ddev drush pm:enable jsonapi_extras
+```
+
+**Basic Usage**:
+
+**Get all articles**:
+```bash
+GET /jsonapi/node/article
+```
+
+**Get specific article**:
+```bash
+GET /jsonapi/node/article/{uuid}
+```
+
+**Get article with relationships**:
+```bash
+GET /jsonapi/node/article/{uuid}?include=field_image,uid
+```
+
+**Filter articles**:
+```bash
+GET /jsonapi/node/article?filter[status]=1&filter[field_category.name]=Technology
+```
+
+**Sort articles**:
+```bash
+GET /jsonapi/node/article?sort=-created
+```
+
+**Pagination**:
+```bash
+GET /jsonapi/node/article?page[limit]=10&page[offset]=20
+```
+
+**Create content via API**:
+```bash
+POST /jsonapi/node/article
+Content-Type: application/vnd.api+json
+Authorization: Bearer {token}
+
+{
+  "data": {
+    "type": "node--article",
+    "attributes": {
+      "title": "New Article",
+      "body": {
+        "value": "Content here",
+        "format": "basic_html"
+      }
+    }
+  }
+}
+```
+
+### GraphQL Integration
+
+**Install GraphQL Module**:
+```bash
+ddev composer require drupal/graphql
+ddev drush pm:enable graphql
+
+# Install GraphQL Compose for automatic schema generation
+ddev composer require drupal/graphql_compose
+ddev drush pm:enable graphql_compose
+```
+
+**GraphQL Explorer**:
+- Access at: `/admin/config/graphql`
+- Built-in GraphiQL interface for testing queries
+
+**Example Query**:
+```graphql
+query {
+  nodeArticles(first: 10) {
+    nodes {
+      id
+      title
+      body {
+        value
+      }
+      created
+      author {
+        name
+      }
+    }
+  }
+}
+```
+
+**Example Mutation**:
+```graphql
+mutation {
+  createArticle(
+    title: "New Article"
+    body: "Article content"
+  ) {
+    entity {
+      id
+      title
+    }
+  }
+}
+```
+
+### API Authentication
+
+**Simple OAuth (Recommended)**:
+
+```bash
+# Install Simple OAuth
+ddev composer require drupal/simple_oauth
+ddev drush pm:enable simple_oauth
+
+# Generate keys
+mkdir -p keys
+openssl genrsa -out keys/private.key 2048
+openssl rsa -in keys/private.key -pubout -out keys/public.key
+chmod 600 keys/*.key
+
+# Configure at /admin/config/people/simple_oauth
+```
+
+**Get Access Token**:
+```bash
+POST /oauth/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password
+&client_id={client_id}
+&client_secret={client_secret}
+&username={username}
+&password={password}
+```
+
+**Use Token in Requests**:
+```bash
+GET /jsonapi/node/article
+Authorization: Bearer {access_token}
+```
+
+### CORS Configuration
+
+**Enable CORS** for headless frontend (in `services.yml`):
+
+```yaml
+cors.config:
+  enabled: true
+  allowedOrigins: ['http://localhost:3000', 'https://yourdomain.com']
+  allowedMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS']
+  allowedHeaders: ['*']
+  exposedHeaders: false
+  maxAge: 1000
+  supportsCredentials: true
+```
+
+**Or use CORS module**:
+```bash
+ddev composer require drupal/cors
+ddev drush pm:enable cors
+# Configure at /admin/config/services/cors
+```
+
+### Decoupled Architecture Patterns
+
+**1. Fully Decoupled** (Headless):
+- Drupal as pure API backend
+- Separate frontend (React, Vue, Next.js)
+- Complete design freedom
+- Best for: Mobile apps, multiple frontends
+
+**2. Progressively Decoupled**:
+- Drupal renders some pages
+- JavaScript framework for interactive components
+- Best for: Existing sites adding modern UI
+
+**3. Hybrid**:
+- Mix of Drupal templates and API-driven sections
+- Best for: Gradual migration
+
+### Frontend Frameworks Integration
+
+**Next.js (React)**:
+```javascript
+// Example: Fetch articles from Drupal
+export async function getStaticProps() {
+  const res = await fetch('https://drupal.site/jsonapi/node/article')
+  const data = await res.json()
+
+  return {
+    props: {
+      articles: data.data
+    }
+  }
+}
+```
+
+**Nuxt.js (Vue)**:
+```javascript
+// Example: Fetch articles
+export default {
+  async asyncData({ $axios }) {
+    const articles = await $axios.$get('/jsonapi/node/article')
+    return { articles: articles.data }
+  }
+}
+```
+
+### API Performance Optimization
+
+**Enable Caching**:
+```bash
+# Configure cache in settings.php
+$settings['cache']['bins']['jsonapi_normalizations'] = 'cache.backend.database';
+
+# Enable BigPipe for progressive rendering
+$settings['container_yamls'][] = 'modules/contrib/big_pipe/big_pipe.services.yml';
+```
+
+**Use Subrequests Module**:
+```bash
+# Batch multiple API calls
+ddev composer require drupal/subrequests
+ddev drush pm:enable subrequests
+
+# Make batch request
+POST /subrequests?_format=json
+[
+  {"uri": "/jsonapi/node/article/123"},
+  {"uri": "/jsonapi/node/article/456"}
+]
+```
+
+### API Security Best Practices
+
+- ✅ Use OAuth tokens, not basic auth
+- ✅ Implement rate limiting (use `rate_limiter` module)
+- ✅ Validate all input data
+- ✅ Use HTTPS in production
+- ✅ Limit API access with permissions
+- ✅ Monitor API usage and errors
+- ✅ Version your API endpoints
+- ✅ Document API for consumers
+
+### API Documentation
+
+**Use OpenAPI/Swagger**:
+```bash
+# Install OpenAPI module
+ddev composer require drupal/openapi
+ddev drush pm:enable openapi openapi_ui
+
+# View documentation
+# Visit: /admin/config/services/openapi
+```
+
+**Or use Schemata**:
+```bash
+ddev composer require drupal/schemata
+ddev drush pm:enable schemata schemata_json_schema
+
+# Generate JSON schemas
+# Visit: /schemata/[entity_type]/[bundle]
+```
+
+### Testing API Endpoints
+
+```bash
+# Test with curl
+curl -X GET "https://drupal.site/jsonapi/node/article" \
+  -H "Accept: application/vnd.api+json"
+
+# Test authenticated endpoint
+curl -X GET "https://drupal.site/jsonapi/node/article" \
+  -H "Authorization: Bearer {token}" \
+  -H "Accept: application/vnd.api+json"
+
+# Test POST
+curl -X POST "https://drupal.site/jsonapi/node/article" \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/vnd.api+json" \
+  -d '{"data":{"type":"node--article","attributes":{"title":"Test"}}}'
+```
+
+## SEO & Structured Data
+
+### Core SEO Modules
+
+**Metatag Module** (Essential):
+```bash
+ddev composer require drupal/metatag
+ddev drush pm:enable metatag metatag_open_graph metatag_twitter_cards
+```
+
+**Pathauto** (Clean URLs):
+```bash
+ddev composer require drupal/pathauto
+ddev drush pm:enable pathauto
+```
+
+**Simple XML Sitemap**:
+```bash
+ddev composer require drupal/simple_sitemap
+ddev drush pm:enable simple_sitemap
+
+# Generate sitemap
+ddev drush simple-sitemap:generate
+
+# Access at: /sitemap.xml
+```
+
+**Redirect Module** (301/302 redirects):
+```bash
+ddev composer require drupal/redirect
+ddev drush pm:enable redirect
+```
+
+### Schema.org Structured Data
+
+**Schema.org Metatag Module**:
+```bash
+ddev composer require drupal/schema_metatag
+ddev drush pm:enable schema_metatag schema_article schema_organization schema_web_page
+```
+
+**Configure Schema.org**:
+
+1. **Organization Schema** (Site-wide):
+   - Navigate to: `/admin/config/search/metatag/global`
+   - Enable "Schema.org" tab
+   - Add Organization schema:
+   ```json
+   {
+     "@type": "Organization",
+     "name": "[Site Name]",
+     "url": "[Site URL]",
+     "logo": "[Logo URL]",
+     "sameAs": [
+       "[Facebook URL]",
+       "[Twitter URL]",
+       "[LinkedIn URL]"
+     ]
+   }
+   ```
+
+2. **Article Schema** (Content type):
+   - Navigate to: `/admin/structure/types/manage/article/fields`
+   - Add Schema.org fields or use tokens:
+   ```json
+   {
+     "@type": "Article",
+     "headline": "[node:title]",
+     "datePublished": "[node:created:html_datetime]",
+     "dateModified": "[node:changed:html_datetime]",
+     "author": {
+       "@type": "Person",
+       "name": "[node:author:display-name]"
+     },
+     "image": "[node:field_image:entity:url]",
+     "publisher": {
+       "@type": "Organization",
+       "name": "[site:name]",
+       "logo": "[site:logo]"
+     }
+   }
+   ```
+
+3. **Breadcrumb Schema**:
+   ```json
+   {
+     "@type": "BreadcrumbList",
+     "itemListElement": [
+       {
+         "@type": "ListItem",
+         "position": 1,
+         "name": "Home",
+         "item": "[site:url]"
+       }
+     ]
+   }
+   ```
+
+### Open Graph & Twitter Cards
+
+**Open Graph Tags** (Facebook, LinkedIn):
+```yaml
+# Configure at /admin/structure/types/manage/[content_type]/fields
+
+og:title: "[node:title]"
+og:description: "[node:summary]"
+og:image: "[node:field_image:entity:url]"
+og:url: "[current-page:url]"
+og:type: "article"
+og:site_name: "[site:name]"
+```
+
+**Twitter Card Tags**:
+```yaml
+twitter:card: "summary_large_image"
+twitter:site: "@yourtwitterhandle"
+twitter:title: "[node:title]"
+twitter:description: "[node:summary]"
+twitter:image: "[node:field_image:entity:url]"
+```
+
+### Hreflang for Multilingual Sites
+
+**Using Hreflang module**:
+```bash
+ddev composer require drupal/hreflang
+ddev drush pm:enable hreflang
+
+# Configure at /admin/config/search/hreflang
+```
+
+**Manual implementation in template**:
+```twig
+{# In html.html.twig #}
+{% for langcode, language in languages %}
+  <link rel="alternate" hreflang="{{ langcode }}" href="{{ path('<current>', {}, {'language': language}) }}" />
+{% endfor %}
+```
+
+### Robots.txt & Robots Meta Tags
+
+**Robots.txt**:
+```bash
+# Edit web/robots.txt
+User-agent: *
+Disallow: /admin/
+Disallow: /user/
+Disallow: /search/
+Allow: /
+
+Sitemap: https://yoursite.com/sitemap.xml
+```
+
+**RobotsTxt module** (manage via UI):
+```bash
+ddev composer require drupal/robotstxt
+ddev drush pm:enable robotstxt
+
+# Configure at /admin/config/search/robotstxt
+```
+
+**Robots Meta Tags**:
+```yaml
+# Per content type at /admin/structure/types/manage/[type]/fields
+
+robots: "index, follow"
+# or for no-index:
+robots: "noindex, nofollow"
+```
+
+### Canonical URLs
+
+**Configure Canonical**:
+```yaml
+# Via Metatag module
+canonical_url: "[current-page:url:absolute]"
+
+# For content types
+canonical_url: "[node:url:absolute]"
+```
+
+**For Multilingual**:
+- Ensure each language version has its own canonical
+- Use hreflang to link language versions
+
+### XML Sitemap Configuration
+
+```bash
+# Configure Simple XML Sitemap
+# Visit: /admin/config/search/simplesitemap
+
+# Settings to configure:
+# - Base URL
+# - Include content types
+# - Update frequency
+# - Priority
+
+# Generate sitemap
+ddev drush simple-sitemap:generate
+
+# Rebuild sitemap
+ddev drush simple-sitemap:rebuild-queue
+```
+
+**Multi-site Sitemaps**:
+```yaml
+# config/sync/simple_sitemap.settings.yml
+engines:
+  google: true
+  bing: true
+variants:
+  default:
+    label: 'Default sitemap'
+    types:
+      node:
+        - article
+        - page
+```
+
+### SEO-Friendly URLs
+
+**Pathauto Patterns**:
+```yaml
+# Configure at /admin/config/search/path/patterns
+
+# Articles: /blog/[node:title]
+# Pages: /[node:title]
+# Terms: /category/[term:name]
+
+# Bulk generate paths
+ddev drush pathauto:generate
+
+# Update existing paths
+ddev drush pathauto:update-all
+```
+
+### Performance for SEO
+
+**Image Optimization**:
+- Use WebP format when possible
+- Implement lazy loading
+- Use responsive images (image styles)
+- Add proper alt attributes
+
+**Page Speed**:
+```bash
+# Enable caching
+ddev drush config:set system.performance css.preprocess 1
+ddev drush config:set system.performance js.preprocess 1
+
+# Enable BigPipe
+ddev drush pm:enable big_pipe
+
+# Check Core Web Vitals
+# Use Google PageSpeed Insights
+# Use Lighthouse in Chrome DevTools
+```
+
+### SEO Testing & Validation
+
+**Test Structured Data**:
+- Google Rich Results Test: https://search.google.com/test/rich-results
+- Schema.org Validator: https://validator.schema.org/
+
+**Test Open Graph**:
+- Facebook Sharing Debugger: https://developers.facebook.com/tools/debug/
+- LinkedIn Post Inspector: https://www.linkedin.com/post-inspector/
+
+**Test Twitter Cards**:
+- Twitter Card Validator: https://cards-dev.twitter.com/validator
+
+**Check Sitemaps**:
+```bash
+# Validate sitemap XML
+curl https://yoursite.com/sitemap.xml
+
+# Submit to Google Search Console
+# Submit to Bing Webmaster Tools
+```
+
+### SEO Checklist
+
+**On-Page SEO**:
+- [ ] Title tags optimized (50-60 characters)
+- [ ] Meta descriptions (150-160 characters)
+- [ ] H1 tag present and unique per page
+- [ ] URL structure clean and descriptive
+- [ ] Images have alt attributes
+- [ ] Internal linking implemented
+- [ ] Content is unique and valuable
+- [ ] Mobile-friendly responsive design
+
+**Technical SEO**:
+- [ ] XML sitemap generated and submitted
+- [ ] Robots.txt configured
+- [ ] Canonical URLs set
+- [ ] Schema.org markup implemented
+- [ ] HTTPS enabled
+- [ ] Page speed optimized (Core Web Vitals)
+- [ ] 404 pages handled properly
+- [ ] Redirects (301) for changed URLs
+
+**Multilingual SEO**:
+- [ ] Hreflang tags implemented
+- [ ] Language-specific sitemaps
+- [ ] Canonical URLs per language
+- [ ] Localized content (not just translated)
+
+### Monitoring SEO Performance
+
+**Google Search Console**:
+```bash
+# Add site property
+# Verify ownership (via DNS or HTML file)
+# Submit sitemap
+# Monitor:
+#   - Index coverage
+#   - Performance (clicks, impressions)
+#   - Core Web Vitals
+#   - Mobile usability
+```
+
+**Google Analytics 4**:
+```bash
+# Install Google Analytics module
+ddev composer require drupal/google_analytics
+ddev drush pm:enable google_analytics
+
+# Configure at /admin/config/system/google-analytics
+```
+
+**SEO Audit Tools**:
+- Screaming Frog SEO Spider
+- Ahrefs Site Audit
+- SEMrush Site Audit
+- Moz Pro
+
+## JavaScript and CSS
+
+### JavaScript Aggregation
+
+**Common Issues**:
+- Missing dependencies in `.libraries.yml` files
+- Incorrect loading order causing undefined objects/functions
+- `drupalSettings` not available when needed
+
+**Solutions**:
+- Add proper dependencies: `core/jquery`, `core/drupal`, `core/drupalSettings`, `core/once`
+- Use error checking: `if (typeof $.fn.pluginName === 'function')`
+- Use modern `once()` function instead of jQuery `.once()`
+- Always test with JS aggregation enabled: `admin/config/development/performance`
+
+### CSS Organization
+
+- Follow BEM naming convention (or project-specific convention)
+- Use SCSS/SASS if applicable
+- Organize stylesheets by component/feature
+- Use single directory compontents if applicable
+
+## Frontend Development
+
+### Theme Development Setup
+
+**Theme location**: `/web/themes/custom/[theme_name]/` (or `/[your-webroot]/themes/custom/[theme_name]/`)
+
+**Initial Setup**:
+```bash
+# Navigate to theme directory
+cd web/themes/custom/[theme_name]
+
+# Install Node.js dependencies
+npm install
+# or
+yarn install
+```
+
+### Build Commands
+
+```bash
+# Development build (non-minified, with source maps)
+npm run dev
+# or
+gulp
+
+# Production build (minified, optimized)
+npm run build
+# or
+gulp dist
+
+# Watch mode (auto-rebuild on file changes)
+npm run watch
+# or
+gulp watch
+```
+
+### Common Frontend Tasks
+
+**Working with SCSS**:
+```bash
+# Compile SCSS to CSS
+gulp sass
+
+# Lint SCSS files
+gulp lint:scss
+
+# Watch SCSS changes
+gulp watch:scss
+```
+
+**Working with JavaScript**:
+```bash
+# Compile/transpile JavaScript
+gulp js
+
+# Lint JavaScript
+gulp lint:js
+
+# Watch JavaScript changes
+gulp watch:js
+```
+
+**Asset Optimization**:
+```bash
+# Optimize images
+gulp images
+
+# Generate icon fonts
+gulp fonts
+
+# Process all assets
+gulp assets
+```
+
+### Development Workflow
+
+1. **Start watch mode**:
+   ```bash
+   cd web/themes/custom/[theme_name]
+   npm run watch
+   ```
+
+2. **Make changes** to SCSS/JS files
+
+3. **View changes** in browser (auto-reload if configured)
+
+4. **Before committing**:
+   ```bash
+   npm run build  # Production build
+   ```
+
+### Theme File Structure
+
+```
+[theme_name]/
+├── package.json           # Node dependencies
+├── gulpfile.js           # Build configuration
+├── webpack.config.js     # Webpack config (if using)
+├── scss/                 # SCSS source files
+│   ├── components/       # Component styles
+│   ├── base/            # Base styles
+│   ├── layout/          # Layout styles
+│   └── style.scss       # Main SCSS file
+├── js/                   # JavaScript source files
+│   └── global.js        # Main JS file
+├── css/                  # Compiled CSS (generated)
+├── templates/            # Twig templates
+├── images/              # Source images
+└── dist/                # Compiled assets (generated)
+```
+
+### Asset Libraries
+
+Define in `[theme_name].libraries.yml`:
+```yaml
+global:
+  css:
+    theme:
+      css/style.css: {}
+  js:
+    js/global.js: {}
+  dependencies:
+    - core/drupal
+    - core/jquery
+```
+
+### Troubleshooting Frontend Builds
+
+```bash
+# Clear node_modules and reinstall
+rm -rf node_modules package-lock.json
+npm install
+
+# Clear build cache
+rm -rf dist/ css/ js/compiled/
+
+# Check Node/NPM versions
+node -v
+npm -v
+
+# Update dependencies
+npm update
+```
+
+### Performance Optimization
+
+- Minify CSS and JavaScript for production
+- Use image optimization (imagemin)
+- Implement critical CSS loading
+- Use font-display: swap for web fonts
+- Enable Drupal CSS/JS aggregation
+- Consider using AdvAgg module
+
+## Environment Indicators
+
+- **Visual verification**: Check indicators display correctly on all pages
+- **Color scheme**: GREEN (Local), BLUE (DEV), ORANGE (STG), RED (PROD)
+- **Never commit "LOCAL"** as value in `environment_indicator.indicator.yml` for production! Always use "PROD" and red color.
+
+## Documentation
+
+**MANDATORY**: Document all work in the "Tasks and Problems" section below.
+
+- Update **Tasks and Problems** section after every development session
+- Document all significant changes and improvements
+- Record common problems and their solutions
+- **CRITICAL**: Use real system date (run `date` command first)
+- Keep entries concise and actionable
+
+**What to Document**:
+- New modules created or modified
+- Bug fixes and their solutions
+- Configuration changes
+- Performance optimizations
+- Integration implementations
+- Development workflow improvements
+- Common problems encountered
+- Security updates and patches
+
+**When to Update**:
+- After adding new features
+- After fixing bugs
+- After implementing improvements
+- After encountering new problems
+- After finding solutions to existing problems
+- End of each development session
+
+See **Tasks and Problems Log** section at the end of this document.
+
+## Common Tasks
+
+### Adding New Module
+
+1. Create directory: `/web/modules/custom/[prefix]_[module_name]/`
+2. Create `[prefix]_[module_name].info.yml` with module definition:
+   ```yaml
+   name: 'Module Name'
+   type: module
+   description: 'Module description'
+   core_version_requirement: ^10 || ^11
+   package: Custom
+   ```
+3. Create `[prefix]_[module_name].module` for hooks (if needed)
+4. Add routing, permissions, services as needed
+5. Follow module structure pattern above
+6. Enable module: `ddev drush pm:enable [prefix]_[module_name]`
+7. Clear caches: `ddev drush cr`
+
+### Updating Drupal Core
+
+1. Check module compatibility: `ddev composer outdated 'drupal/*'`
+2. Backup database: `ddev export-db --file=backup-pre-update.sql.gz`
+3. Update core:
+   ```bash
+   ddev composer update drupal/core-recommended --with-dependencies
+   ddev composer update drupal/core-composer-scaffold --with-dependencies
+   ```
+4. Run database updates: `ddev drush updb`
+5. Clear caches: `ddev drush cr`
+6. Test thoroughly and check logs
+7. Document in Tasks and Problems section
+
+### Creating Database Migration
+
+1. Add update hook to module `.install` file:
+   ```php
+   function [module_name]_update_10001() {
+     // Update logic here
+   }
+   ```
+2. Use `EntityDefinitionUpdateManager` for field changes
+3. Check if field exists before updating
+4. Update form/view displays if needed
+5. Clear caches and log completion:
+   ```php
+   drupal_flush_all_caches();
+   \Drupal::logger('module_name')->info('Migration completed.');
+   ```
+6. Test backward compatibility
+7. Test on staging before production
+
+### Adding Tests
+
+1. Determine test type (unit, functional, integration, acceptance)
+2. Create test file in appropriate directory:
+   - Unit: `tests/src/Unit/`
+   - Kernel: `tests/src/Kernel/`
+   - Functional: `tests/src/Functional/`
+   - Acceptance: `tests/acceptance/`
+3. Follow naming convention: `*Test.php` for PHPUnit, `*Cest.php` for Codeception
+4. Write test following best practices
+5. Run tests to verify: `ddev exec vendor/bin/phpunit [test-file]`
+6. Add to CI/CD pipeline
+
+### Running Tests
+
+1. PHPUnit tests:
+   ```bash
+   ddev exec vendor/bin/phpunit web/modules/custom/[module]/tests
+   ```
+2. Codeception tests:
+   ```bash
+   ddev exec vendor/bin/codecept run
+   ```
+3. Check results in `tests/_output/`
+
+### Debugging Issues
+
+1. Enable Xdebug: `ddev xdebug on`
+2. Set breakpoints in IDE
+3. Run code/request
+4. Step through code
+5. Disable when done: `ddev xdebug off`
+
+See **Debugging** section for more detailed debugging commands.
+
+### Managing Permissions
+
+1. Grant permissions to role:
+   ```php
+   user_role_grant_permissions($role_id, ['permission1', 'permission2']);
+   drupal_flush_all_caches();
+   ```
+2. Via UI: `/admin/people/permissions`
+3. Check current permissions: `ddev drush role:perm:list [role_name]`
+
+### Exporting Configuration
+
+1. Make configuration changes in UI
+2. Export: `ddev drush cex`
+3. Review changes: `git diff config/`
+4. Commit exported configuration
+5. On other environments: `ddev drush cim`
+
+## Troubleshooting
+
+### JavaScript Errors with Aggregation
+
+**Problem**: JavaScript works in development but breaks with aggregation enabled.
+
+**Diagnosis**:
+1. Check `.libraries.yml` for missing dependencies
+2. Verify loading order in Network tab (browser DevTools)
+3. Check browser console for errors
+4. Enable aggregation: `/admin/config/development/performance`
+
+**Solutions**:
+```yaml
+# Fix: Add proper dependencies in [module].libraries.yml
+my_library:
+  js:
+    js/script.js: {}
+  dependencies:
+    - core/drupal
+    - core/jquery
+    - core/drupalSettings
+    - core/once
+```
+
+```javascript
+// Fix: Add safety checks in JavaScript
+(function (Drupal, once) {
+  'use strict';
+
+  Drupal.behaviors.myBehavior = {
+    attach: function (context, settings) {
+      // Check if dependencies exist
+      if (typeof once === 'undefined' || typeof settings.myModule === 'undefined') {
+        return;
+      }
+
+      // Safe to use
+      once('my-behavior', '.my-selector', context).forEach(function (element) {
+        // Your code
+      });
+    }
+  };
+})(Drupal, once);
+```
+
+### Drush Issues
+
+**Problem**: Drush commands fail or produce unexpected results.
+
+**Common Causes & Solutions**:
+
+1. **Drush version incompatibility**:
+   ```bash
+   # Check Drush version
+   ddev drush --version
+
+   # Update Drush
+   ddev composer update drush/drush
+   ```
+
+2. **Memory exhaustion**:
+   ```bash
+   # Increase PHP memory limit temporarily
+   ddev exec php -d memory_limit=512M vendor/bin/drush [command]
+   ```
+
+3. **Permission issues**:
+   ```bash
+   # Fix file permissions
+   ddev exec chmod -R 755 web/sites/default/files
+   ddev exec chmod 444 web/sites/default/settings.php
+   ```
+
+4. **Bootstrap errors**:
+   ```bash
+   # Clear caches
+   ddev drush cr
+
+   # Rebuild registry
+   ddev drush php:eval "\$kernel = \Drupal::service('kernel'); \$kernel->invalidateContainer();"
+   ```
+
+### Cache Issues
+
+**Problem**: Changes not appearing or stale content showing.
+
+**Solutions**:
+```bash
+# Clear all caches
+ddev drush cr
+
+# Clear specific cache bin
+ddev drush cache:clear render
+ddev drush cache:clear dynamic_page_cache
+
+# Clear Twig cache and rebuild
+ddev drush twig:debug
+rm -rf web/sites/default/files/php/twig/*
+
+# Disable caches for development (development.services.yml)
+# Then: ddev drush cr
+
+# Nuclear option: Clear everything
+ddev drush sql:query "TRUNCATE cache_bootstrap; TRUNCATE cache_config; TRUNCATE cache_container; TRUNCATE cache_data; TRUNCATE cache_default; TRUNCATE cache_discovery; TRUNCATE cache_dynamic_page_cache; TRUNCATE cache_entity; TRUNCATE cache_menu; TRUNCATE cache_render;"
+ddev drush cr
+```
+
+### Database Issues
+
+**Problem**: Database corruption, pending updates, or connection errors.
+
+**Solutions**:
+```bash
+# Check database connection
+ddev drush sql:cli
+# Type: SELECT 1; (should return 1)
+
+# Run pending updates
+ddev drush updatedb
+# Alias: ddev drush updb
+
+# Rebuild entity schema
+ddev drush entity:updates
+
+# Repair tables
+ddev mysql -e "REPAIR TABLE [table_name];"
+
+# Check for crashed tables
+ddev mysql -e "CHECK TABLE [table_name];"
+
+# Reset to known good state
+ddev db-restore  # If you have backup
+```
+
+### DDEV Container Issues
+
+**Problem**: Containers won't start or behave unexpectedly.
+
+**Solutions**:
+```bash
+# Restart DDEV
+ddev restart
+
+# Stop and start (full restart)
+ddev stop
+ddev start
+
+# Remove and recreate containers
+ddev delete -O
+ddev start
+
+# Check Docker resources
+docker ps
+docker stats
+
+# View DDEV logs
+ddev logs
+
+# Check for port conflicts
+ddev describe
+```
+
+### Module Installation Issues
+
+**Problem**: Module won't install or enable.
+
+**Solutions**:
+```bash
+# Check module dependencies
+ddev composer why-not drupal/[module_name]
+
+# Install with dependencies
+ddev composer require drupal/[module_name]
+
+# Enable module
+ddev drush pm:enable [module_name]
+
+# Check for conflicts
+ddev drush pm:list | grep [module_name]
+
+# If schema issues
+ddev drush updatedb
+ddev drush entity:updates
+```
+
+### Permission Denied Errors
+
+**Problem**: Cannot write files or access directories.
+
+**Solutions**:
+```bash
+# Fix files directory permissions
+ddev exec chmod -R 775 web/sites/default/files
+ddev exec chown -R $(id -u):$(id -g) web/sites/default/files
+
+# Make settings.php writable temporarily
+ddev exec chmod 644 web/sites/default/settings.php
+# After changes:
+ddev exec chmod 444 web/sites/default/settings.php
+
+# Fix Twig cache permissions
+ddev exec chmod -R 775 web/sites/default/files/php
+```
+
+### White Screen of Death (WSOD)
+
+**Problem**: Blank white page with no error message.
+
+**Solutions**:
+```bash
+# Enable error reporting temporarily
+ddev drush config:set system.logging error_level verbose
+
+# Check PHP error log
+ddev logs
+
+# Check watchdog
+ddev drush watchdog:show --count=50
+
+# Check for fatal errors
+ddev exec tail -f /var/log/php/php-fpm.log
+
+# Disable recently enabled modules
+ddev drush pm:uninstall [module_name]
+```
+
+### Configuration Import Failures
+
+**Problem**: `ddev drush cim` fails with errors.
+
+**Solutions**:
+```bash
+# Check what would be imported
+ddev drush config:status
+
+# Import with override
+ddev drush cim -y
+
+# Import specific configuration
+ddev drush config:import --partial --source=/path/to/config
+
+# If UUID mismatch
+ddev drush config:set system.site uuid [correct-uuid]
+
+# Skip validation (use with caution)
+ddev drush cim --skip-modules
+```
+
+### Memory Limit Issues
+
+**Problem**: PHP memory exhausted errors.
+
+**Solutions**:
+```bash
+# Check current limit
+ddev exec php -i | grep memory_limit
+
+# Increase in .ddev/php/php.ini
+echo "memory_limit = 512M" >> .ddev/php/php.ini
+ddev restart
+
+# Or for single command
+ddev exec php -d memory_limit=1G vendor/bin/drush [command]
+```
+
+## Additional Resources
+
+- **Project Documentation**: `.cursor/TASKS_AND_PROBLEMS.md`
+- **Drupal Documentation**: https://www.drupal.org/docs
+- **DDEV Documentation**: https://ddev.readthedocs.io/
+
+---
+
+<!--
+===========================================
+PROJECT-SPECIFIC SECTIONS BELOW
+Add sections specific to your project here
+===========================================
+-->
+
+## Drupal Entities Structure
+
+Complete reference of content types, media types, taxonomies, and custom entities in this project.
+
+### Content Types (Node Bundles)
+
+<!--
+Document all content types in the project. Update this section during customization.
+
+Example format:
+-->
+
+```json
+{
+  "content_types": {
+    "article": {
+      "machine_name": "article",
+      "label": "Article",
+      "description": "News and blog posts",
+      "features": ["revisions", "menu_ui", "content_translation"],
+      "key_fields": [
+        "body",
+        "field_image",
+        "field_tags",
+        "field_category"
+      ]
+    },
+    "page": {
+      "machine_name": "page",
+      "label": "Basic Page",
+      "description": "Static pages",
+      "features": ["revisions", "menu_ui"],
+      "key_fields": [
+        "body",
+        "field_sections"
+      ]
+    }
+  }
+}
+```
+
+**How to discover content types**:
+```bash
+# List all content types
+ddev drush entity:bundle-info node
+
+# Export content type configuration
+ddev drush config:export --destination=/tmp/config
+# Check: /tmp/config/node.type.*.yml
+
+# List fields for content type
+ddev drush field:list node article
+```
+
+### Paragraph Types
+
+<!--
+Document paragraph types if using Paragraphs module.
+Organize by category for better readability.
+-->
+
+```json
+{
+  "paragraph_types": {
+    "layout_paragraphs": [
+      "banner",
+      "two_column_layout",
+      "accordion"
+    ],
+    "content_paragraphs": [
+      "text_block",
+      "quote",
+      "call_to_action"
+    ],
+    "media_paragraphs": [
+      "image_gallery",
+      "video_embed",
+      "carousel"
+    ]
+  }
+}
+```
+
+### Media Types
+
+```json
+{
+  "media_types": {
+    "image": {
+      "machine_name": "image",
+      "label": "Image",
+      "source": "image",
+      "source_field": "field_media_image"
+    },
+    "document": {
+      "machine_name": "document",
+      "label": "Document",
+      "source": "file",
+      "source_field": "field_media_document"
+    },
+    "remote_video": {
+      "machine_name": "remote_video",
+      "label": "Remote Video",
+      "source": "oembed:video",
+      "source_field": "field_media_oembed_video"
+    }
+  }
+}
+```
+
+### Taxonomy Vocabularies
+
+```json
+{
+  "taxonomies": {
+    "tags": {
+      "machine_name": "tags",
+      "label": "Tags",
+      "description": "Content tagging",
+      "hierarchy": false
+    },
+    "categories": {
+      "machine_name": "categories",
+      "label": "Categories",
+      "description": "Content categorization",
+      "hierarchy": true
+    }
+  }
+}
+```
+
+### Custom Entities
+
+<!--
+Document custom content entities here if project has any.
+-->
+
+```json
+{
+  "custom_entities": {
+    "custom_entity_name": {
+      "type": "content_entity",
+      "base_table": "custom_entity",
+      "entity_keys": {
+        "id": "id",
+        "uuid": "uuid",
+        "label": "name"
+      },
+      "fields": {
+        "id": "integer",
+        "uuid": "uuid",
+        "name": "string",
+        "status": "boolean",
+        "created": "timestamp",
+        "changed": "timestamp"
+      }
+    }
+  }
+}
+```
+
+**Discover custom entities**:
+```bash
+# List all entity types
+ddev drush entity:info
+
+# View entity definition
+ddev drush php:eval "print_r(\Drupal::entityTypeManager()->getDefinition('entity_id'));"
+```
+
+### Entity Relationships
+
+<!--
+Document key entity relationships.
+Use this section to explain how entities connect.
+-->
+
+**Examples**:
+- **Article** → **Tags** (many-to-many via `field_tags`)
+- **Article** → **Author** (many-to-one via `uid`)
+- **Page** → **Paragraphs** (one-to-many via `field_sections`)
+- **Custom Entity** → **Node** (reference via `field_node_ref`)
+
+### Field Patterns
+
+**Common field naming patterns in this project**:
+
+- `field_[name]` - Standard field prefix
+- `field_[prefix]_[name]` - Module-specific fields (e.g., `field_meta_tags`)
+- Base fields: `title`, `body`, `created`, `changed`, `uid`, `status`
+
+**Key Field Types**:
+- Reference fields: `entity_reference`, `entity_reference_revisions`
+- Text fields: `string`, `text_long`, `text_with_summary`
+- Date fields: `datetime`, `daterange`, `timestamp`
+- Media: `image`, `file`
+- Structured: `link`, `address`, `telephone`
+
+### View Modes
+
+**Node View Modes**:
+- `full` - Full content display
+- `teaser` - Summary/card display
+- `search_result` - Search results display
+- Custom: `[document_custom_view_modes]`
+
+**Media View Modes**:
+- `full` - Full media display
+- `media_library` - Media library thumbnail
+- Custom: `[document_custom_view_modes]`
+
+### Entity Constants
+
+<!--
+Document entity status values and other constants used in the project.
+-->
+
+```php
+// Example: Content workflow states
+define('ENTITY_STATUS_DRAFT', 0);
+define('ENTITY_STATUS_PUBLISHED', 1);
+define('ENTITY_STATUS_ARCHIVED', 2);
+
+// Custom entity states
+define('CUSTOM_ENTITY_PENDING', 0);
+define('CUSTOM_ENTITY_APPROVED', 1);
+define('CUSTOM_ENTITY_REJECTED', 2);
+```
+
+### Entity Access Patterns
+
+**Common access patterns**:
+- View published content: `access content` permission
+- Edit own content: `edit own [type] content` permission
+- Delete own content: `delete own [type] content` permission
+- Administer content: `administer [type] content` permission
+
+### Entity Queries
+
+**Common query patterns for this project**:
+
+```php
+// Query nodes
+$query = \Drupal::entityTypeManager()->getStorage('node')->getQuery()
+  ->condition('type', 'article')
+  ->condition('status', 1)
+  ->accessCheck(TRUE)
+  ->sort('created', 'DESC')
+  ->range(0, 10);
+$nids = $query->execute();
+
+// Query with relationships
+$query = \Drupal::entityTypeManager()->getStorage('node')->getQuery()
+  ->condition('type', 'article')
+  ->condition('field_category.entity.name', 'Technology')
+  ->accessCheck(TRUE);
+$nids = $query->execute();
+
+// Query custom entities
+$query = \Drupal::entityTypeManager()->getStorage('custom_entity')->getQuery()
+  ->condition('status', CUSTOM_ENTITY_APPROVED)
+  ->accessCheck(TRUE);
+$ids = $query->execute();
+```
+
+### Migration Patterns
+
+If project uses migrations, document source to destination mappings:
+
+```yaml
+# Example migration mapping
+source:
+  entity_type: legacy_node
+  bundle: legacy_article
+
+destination:
+  entity_type: node
+  bundle: article
+
+field_mapping:
+  legacy_title → title
+  legacy_body → body
+  legacy_image → field_image
+  legacy_category → field_category
+```
+
+## Project-Specific Features
+
+<!--
+Add documentation for project-specific features here.
+Examples:
+- Custom entity workflows
+- Integration with external services
+- PDF generation
+- Email notifications
+- API endpoints
+-->
+
+## Development Workflow
+
+- Document all significant changes in "Tasks and Problems" section below
+- Follow the format and examples provided
+- Review existing entries before making architectural changes
+- Always run `date` command to get current date before adding entries
+
+---
+
+## Tasks and Problems Log
+
+**MANDATORY**: Update this section after completing tasks or solving problems during each development session.
+
+**Format**: `YYYY-MM-DD | Brief description of task/problem and solution`
+
+**Instructions**:
+1. Run `date` command to get current date before adding entries
+2. Add new entries at the top (most recent first)
+3. Keep entries concise and actionable
+4. Include relevant file paths, module names, or configuration keys
+5. Document both what was done and why it was necessary
+
+### Completed Tasks
+
+```
+[Add completed tasks here following the format]
+
+Example:
+2024-01-15 | Created custom module d_custom_feature for handling special workflow
+2024-01-14 | Updated Drupal core from 10.1.0 to 10.2.0, ran database updates successfully
+2024-01-13 | Fixed JavaScript aggregation issue by adding missing core/once dependency
+```
+
+### Problems and Solutions
+
+```
+[Add problems and solutions here]
+
+Example format:
+2024-01-15 | PROBLEM: Configuration import failing with UUID mismatch
+          | SOLUTION: Updated system.site UUID using drush config:set system.site uuid [correct-uuid]
+
+2024-01-14 | PROBLEM: Drush commands timing out with memory exhausted error
+          | SOLUTION: Increased PHP memory limit in .ddev/php/php.ini to 512M, restarted DDEV
+
+2024-01-13 | PROBLEM: Custom module not appearing in module list
+          | SOLUTION: Fixed .info.yml syntax error (missing space after colon), cleared cache
+```
+
+### Configuration Changes
+
+```
+[Document significant configuration changes]
+
+Example:
+2024-01-15 | Enabled Redis cache backend in settings.php
+2024-01-14 | Configured TPay payment gateway with sandbox credentials
+2024-01-13 | Updated environment indicator color scheme (dev=blue, staging=orange, prod=red)
+```
+
+### Performance Optimizations
+
+```
+[Document performance improvements]
+
+Example:
+2024-01-15 | Enabled CSS/JS aggregation and AdvAgg module
+2024-01-14 | Optimized database by truncating old cache tables
+2024-01-13 | Implemented lazy loading for images using native loading="lazy"
+```
+
+### Security Updates
+
+```
+[Document security-related changes]
+
+Example:
+2024-01-15 | Applied security update for Drupal core 10.1.8
+2024-01-14 | Updated webform module to address SA-CONTRIB-2024-001
+2024-01-13 | Hardened file permissions on settings.php (chmod 444)
+```
+
+### Development Notes
+
+```
+[General development notes and observations]
+
+Example:
+2024-01-15 | Note: Custom entity queries must include ->accessCheck(TRUE/FALSE)
+2024-01-14 | Note: When using Config Split, remember to activate splits in settings.php
+2024-01-13 | Note: DDEV custom commands must NOT use ## #ddev-generated comments
+```
+
+---
+
+<!--
+===========================================
+TEMPLATE CUSTOMIZATION CHECKLIST
+===========================================
+
+When using this template for a new project, complete the following tasks:
+
+## Required Replacements
+
+- [ ] **CRITICAL**: Verify and replace `web/` with your actual web root directory name if different
+  - Check your project: Is it `web/`, `docroot/`, `html/`, or other?
+  - Replace ALL occurrences throughout this document
+  - Common locations: module paths, theme paths, settings.php path
+- [ ] Replace [PROJECT_NAME] with your project name throughout
+- [ ] Replace [VERSION] with Drupal version (e.g., 10, 11)
+- [ ] Replace [REPOSITORY_URL] with your Git repository URL
+- [ ] Replace [PROJECT_DIR] with your project directory name
+- [ ] Replace [BUILD_COMMAND] with your DDEV build command
+- [ ] Replace [prefix] with your module prefix (e.g., d_, custom_, myproject_)
+- [ ] Replace [theme_name] with your custom theme name
+- [ ] Replace [module_name] with actual module names where applicable
+
+## Sections to Customize
+
+- [ ] **Project Overview** - Add project description, architecture details
+- [ ] **Project Architecture** - Document custom entities, roles, use cases
+- [ ] **Git Workflow** - Customize branching strategy, commit standards
+- [ ] **Development Environment URLs** - List actual local development URLs
+- [ ] **DDEV Workflow** - Add project-specific DDEV commands
+- [ ] **Composer Management** - Document specific version requirements
+- [ ] **Composer Scripts** - Define custom scripts for build, deploy, test
+- [ ] **Environment Variables Setup** - List required environment variables
+- [ ] **Code Quality Tools** - Verify tool configuration paths, add Upgrade Status if needed
+- [ ] **Testing** - Configure test framework and organization
+- [ ] **Module Structure** - Add project-specific module patterns
+- [ ] **Directory Structure** - Document actual directory structure
+- [ ] **Headless/API-First** - Configure if using JSON:API or GraphQL
+- [ ] **SEO & Structured Data** - Configure Metatag, Schema.org, sitemap
+- [ ] **Multilingual Configuration** - Document languages, translation setup if multilingual
+- [ ] **Configuration Management** - Add config split/ignore details if applicable
+- [ ] **Security** - Add project-specific security requirements
+- [ ] **Frontend Development** - Configure build tools and commands
+- [ ] **Common Tasks** - Add project-specific common tasks
+- [ ] **Troubleshooting** - Add project-specific issues and solutions
+- [ ] **Drupal Entities Structure** - Document content types, paragraphs, media, taxonomies
+- [ ] **Entity Relationships** - Document how entities connect
+- [ ] **Entity Constants** - Document status values and constants
+- [ ] **Project-Specific Features** - Document custom functionality
+- [ ] **Tasks and Problems Log** - Start documenting from day one!
+
+## Optional Sections (Uncomment if applicable)
+
+- [ ] **Multisite Configuration** - Uncomment and configure if multisite
+- [ ] **Multisite Drush section** - Uncomment for multisite projects
+- [ ] **AI Integration** - Uncomment if using AI services (OpenAI, etc.)
+- [ ] **Commerce/Payment** - Uncomment if using Drupal Commerce
+- [ ] **Config Split** - Uncomment if using config_split module
+- [ ] **Config Ignore** - Uncomment if using config_ignore module
+- [ ] **Environment Indicators** - Uncomment if using environment_indicator
+
+## Sections to Remove if Not Applicable
+
+- [ ] Remove **Config Split** section if not using config_split
+- [ ] Remove **Config Ignore** section if not using config_ignore
+- [ ] Remove **Environment Indicators** if not using environment_indicator
+- [ ] Remove **Redis** references if not using Redis
+- [ ] Remove **Platform.sh** references if using different hosting
+
+## Important Reminders
+
+- [ ] Update **Tasks and Problems Log** after every development session
+- [ ] Always run `date` command before adding entries to documentation
+- [ ] Keep **Tasks and Problems** section updated with real dates
+- [ ] Document all custom DDEV commands created
+- [ ] Document all environment variables needed
+- [ ] Keep security credentials out of version control
+- [ ] Test all documented commands work correctly
+- [ ] Review and update documentation quarterly
+- [ ] Share this document with all team members
+- [ ] Update checklist as project evolves
+
+## Post-Setup Verification
+
+- [ ] All placeholders replaced
+- [ ] All URLs tested and working
+- [ ] All commands tested and documented
+- [ ] Environment variables documented
+- [ ] Security best practices implemented
+- [ ] Team members trained on documentation
+- [ ] Tasks and Problems section being actively used
+- [ ] Documentation stays up-to-date
+
+---
+
+**Last Updated**: [Add date when customization completed]
+**Customized By**: [Add your name]
+**Project Start Date**: [Add project start date]
+-->
