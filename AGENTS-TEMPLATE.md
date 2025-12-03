@@ -59,282 +59,32 @@ API keys in environment variables
 **CRITICAL**: Before writing dates to `.md` files, run `date` command first.
 Never use example dates (e.g., "2024-01-01") - always use actual system date.
 
-## Git Workflow & Branching Strategy
+## Git Workflow
 
-### Repository Structure
+**Branches**: `main` (prod), `staging` (test), `feature/*`, `bugfix/*`, `hotfix/*`, `release/*`
 
-**Branch Types**:
-- `main` or `master` - Production-ready code
-- `staging` or `develop` - Integration branch for testing
-- `feature/[feature-name]` - New features
-- `bugfix/[bug-name]` - Bug fixes
-- `hotfix/[issue-name]` - Critical production fixes
-- `release/[version]` - Release preparation
+**Flow**: `staging` → `feature/name` → PR → merge to `staging` → eventually `main`
 
-### Git Flow Workflow
+**Hotfix**: `main` → `hotfix/name` → merge to `main` + `staging`, tag release
 
-**Standard Development Flow**:
+**Commit format**: `[type]: description` (max 50 chars)
+Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `config`
 
-1. **Start new feature**:
-   ```bash
-   git checkout staging
-   git pull origin staging
-   git checkout -b feature/my-new-feature
-   ```
+**Before PR**: Run `phpcs`, `phpstan`, tests, `drush cex`
 
-2. **Work on feature**:
-   ```bash
-   # Make changes
-   git add .
-   git commit -m "Add new feature: description"
+**Don'ts**: No direct commits to main/staging, no `--force` on shared branches, no credentials in code
 
-   # Keep updated with staging
-   git fetch origin
-   git rebase origin/staging
-   ```
-
-3. **Push and create Pull Request**:
-   ```bash
-   git push origin feature/my-new-feature
-   # Create PR in GitHub/GitLab/Bitbucket
-   ```
-
-4. **After PR approval**:
-   ```bash
-   # Merge via UI or:
-   git checkout staging
-   git merge --no-ff feature/my-new-feature
-   git push origin staging
-   git branch -d feature/my-new-feature
-   ```
-
-### Hotfix Workflow
-
-**For critical production issues**:
-
-```bash
-# Create hotfix from main
-git checkout main
-git pull origin main
-git checkout -b hotfix/critical-bug-fix
-
-# Fix and test
-git add .
-git commit -m "Hotfix: Fix critical issue with [description]"
-
-# Merge to main
-git checkout main
-git merge --no-ff hotfix/critical-bug-fix
-git tag -a v1.0.1 -m "Hotfix release 1.0.1"
-git push origin main --tags
-
-# Merge back to staging
-git checkout staging
-git merge --no-ff hotfix/critical-bug-fix
-git push origin staging
-
-# Clean up
-git branch -d hotfix/critical-bug-fix
-```
-
-### Commit Message Standards
-
-**Format**:
-```
-[Type]: Brief description (max 50 chars)
-
-Detailed explanation of changes (optional, max 72 chars per line)
-
-- Key change 1
-- Key change 2
-
-Refs: #123 (issue/ticket number)
-```
-
-**Types**:
-- `feat:` - New feature
-- `fix:` - Bug fix
-- `docs:` - Documentation changes
-- `style:` - Code style changes (formatting, no logic change)
-- `refactor:` - Code refactoring
-- `perf:` - Performance improvements
-- `test:` - Adding or updating tests
-- `chore:` - Build process or tooling changes
-- `config:` - Configuration changes
-
-**Examples**:
-```bash
-git commit -m "feat: Add user profile dashboard"
-git commit -m "fix: Resolve cache clearing issue in custom module"
-git commit -m "config: Update environment indicator colors"
-git commit -m "refactor: Extract form validation to service"
-```
-
-### Code Review Process
-
-**Before Creating PR**:
-- [ ] Code follows Drupal coding standards (run `phpcs`)
-- [ ] No PHPStan errors (run `phpstan`)
-- [ ] All tests pass (run `phpunit`, `codecept`)
-- [ ] Configuration exported (run `drush cex`)
-- [ ] Documentation updated
-- [ ] Commit messages are clear and follow standards
-
-**PR Description Template**:
-```markdown
-## Description
-Brief description of changes
-
-## Type of Change
-- [ ] Bug fix
-- [ ] New feature
-- [ ] Breaking change
-- [ ] Documentation update
-
-## Testing
-- [ ] Unit tests added/updated
-- [ ] Manual testing completed
-- [ ] Tested in multiple browsers (if frontend)
-
-## Checklist
-- [ ] Code follows coding standards
-- [ ] Self-review completed
-- [ ] Documentation updated
-- [ ] No new warnings or errors
-```
-
-### Git Best Practices
-
-**Do**:
-- ✅ Commit often with descriptive messages
-- ✅ Keep commits atomic (one logical change per commit)
-- ✅ Pull before starting new work
-- ✅ Use feature branches for all changes
-- ✅ Rebase feature branches on staging regularly
-- ✅ Test before pushing
-- ✅ Review your own code before PR
-
-**Don't**:
-- ❌ Commit directly to main/staging
-- ❌ Force push to shared branches (`--force`)
-- ❌ Commit credentials or sensitive data
-- ❌ Commit large binary files
-- ❌ Mix unrelated changes in one commit
-- ❌ Use vague commit messages ("fix stuff", "updates")
-
-### Git Configuration
-
-**Recommended Git Config**:
-```bash
-# Set user info
-git config user.name "Your Name"
-git config user.email "your.email@example.com"
-
-# Set default branch name
-git config --global init.defaultBranch main
-
-# Enable color output
-git config --global color.ui auto
-
-# Set default editor
-git config --global core.editor "nano"  # or vim, code, etc.
-
-# Enable rerere (reuse recorded resolution)
-git config --global rerere.enabled true
-
-# Set up aliases
-git config --global alias.st status
-git config --global alias.co checkout
-git config --global alias.br branch
-git config --global alias.ci commit
-git config --global alias.unstage 'reset HEAD --'
-git config --global alias.last 'log -1 HEAD'
-```
-
-### Useful Git Commands
-
-```bash
-# View commit history
-git log --oneline --graph --all
-
-# View changes in working directory
-git diff
-
-# View changes staged for commit
-git diff --cached
-
-# Undo last commit (keep changes)
-git reset --soft HEAD~1
-
-# Undo last commit (discard changes)
-git reset --hard HEAD~1
-
-# Stash changes temporarily
-git stash
-git stash pop
-
-# View stash list
-git stash list
-
-# Cherry-pick specific commit
-git cherry-pick [commit-hash]
-
-# Find who changed a line
-git blame [file]
-
-# Search commits
-git log --grep="keyword"
-```
-
-### Resolving Conflicts
-
-```bash
-# When merge conflict occurs
-git status  # View conflicted files
-
-# Edit conflicted files manually
-# Look for <<<<<<< HEAD markers
-
-# After resolving
-git add [resolved-files]
-git commit
-
-# Or abort merge
-git merge --abort
-```
-
-### .gitignore Best Practices
-
-**Essential ignores for Drupal**:
+**.gitignore essentials**:
 ```gitignore
-# Drupal core files
 web/core/
 web/modules/contrib/
 web/themes/contrib/
-web/profiles/contrib/
 vendor/
-
-# Site-specific files
 web/sites/*/files/
-web/sites/*/private/
 web/sites/*/settings.local.php
-web/sites/*/services.local.yml
-
-# Development files
 .ddev/
-*.log
-.DS_Store
-.idea/
-.vscode/
-
-# Build artifacts
 node_modules/
-npm-debug.log
-web/themes/custom/*/dist/
-
-# Environment files
 .env
-.env.local
 ```
 
 ## Development Environment
