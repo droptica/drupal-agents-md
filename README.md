@@ -1,5 +1,7 @@
 # Drupal AGENTS.md Template
 
+**Give AI context about your Drupal project.**
+
 [AGENTS.md](https://agents.md) template for Drupal projects. AI reads it once and knows your architecture, standards, and workflows.
 
 **Assumes DDEV-based development.**
@@ -18,7 +20,8 @@ curl -o AGENTS-TEMPLATE.md https://raw.githubusercontent.com/droptica/drupal-age
 I need you to customize AGENTS-TEMPLATE.md for my Drupal project and save it as AGENTS.md.
 
 Please:
-1. Before starting, create a temporary file named `./tmp/agents-md-tasks.md` and copy the following checklist into it. Use this file to track your progress by marking tasks as `[x]` when completed. Update this file after each major step.
+1. First, copy AGENTS-TEMPLATE.md to AGENTS.md. Make ALL changes directly in AGENTS.md file, not in chat memory - this prevents losing changes.
+2. Create a temporary file `./tmp/agents-md-tasks.md` and copy the checklist below. Mark tasks as `[x]` when completed.
 
 --- CHECKLIST START (copy to ./tmp/agents-md-tasks.md) ---
 
@@ -69,21 +72,20 @@ Please:
 - [ ] Add selected items to AGENTS.md
 
 ## Phase 6: Finalize
-- [ ] Save as AGENTS.md in project root
 - [ ] Show summary: found / replaced / removed / added
 - [ ] Delete the temporary `./tmp/agents-md-tasks.md` file
 
 --- CHECKLIST END ---
 
-2. Read AGENTS-TEMPLATE.md and follow all HTML comment guides (HOW TO DISCOVER...)
-3. Execute all discovery steps from Phase 1
-4. **STOP after Phase 1** - show me what you found and wait for my confirmation before proceeding
-5. If you're unsure about ANY value (prefix, theme name, etc.) - ASK, don't guess
-6. Replace all placeholders from Phase 2
-7. Fill sections from Phase 3
-8. Cleanup from Phase 4
-9. **STOP at Phase 5** - show numbered list of proposed additions, wait for my response
-10. Add selected items, then finalize (Phase 6)
+3. Read AGENTS.md and follow all HTML comment guides (HOW TO DISCOVER...)
+4. Execute all discovery steps from Phase 1
+5. **STOP after Phase 1** - show me what you found and wait for my confirmation before proceeding
+6. If you're unsure about ANY value (prefix, theme name, etc.) - ASK, don't guess
+7. Replace all placeholders from Phase 2 (edit AGENTS.md directly)
+8. Fill sections from Phase 3
+9. Cleanup from Phase 4
+10. **STOP at Phase 5** - show numbered list of proposed additions, wait for my response
+11. Add selected items, then finalize (Phase 6)
 
 After customization, show me:
 - What you found in the project
