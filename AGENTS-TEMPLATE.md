@@ -175,388 +175,74 @@ ddev drush upgrade_status:analyze --all
 
 ## Testing
 
-Comprehensive testing ensures code quality and prevents regressions.
-
-### PHPUnit (Unit and Kernel Tests)
-
-**Purpose**: Test individual components and Drupal integration
-
 ```bash
-# Run all PHPUnit tests
+# PHPUnit
 ddev exec vendor/bin/phpunit web/modules/custom
-
-# Run specific module tests
-ddev exec vendor/bin/phpunit web/modules/custom/[module_name]/tests
-
-# Run specific test class
-ddev exec vendor/bin/phpunit web/modules/custom/[module_name]/tests/src/Unit/MyTest.php
-
-# Run with coverage report
+ddev exec vendor/bin/phpunit web/modules/custom/[module]/tests/src/Unit/MyTest.php
 ddev exec vendor/bin/phpunit --coverage-html coverage web/modules/custom
-```
 
-**Test Types**:
-- **Unit Tests**: Test individual classes/methods in isolation (`tests/src/Unit/`)
-- **Kernel Tests**: Test with minimal Drupal bootstrap (`tests/src/Kernel/`)
-- **Functional Tests**: Full Drupal installation tests (`tests/src/Functional/`)
-- **FunctionalJavaScript**: Tests with JavaScript support (`tests/src/FunctionalJavascript/`)
+# Codeception
+ddev exec vendor/bin/codecept run [acceptance|functional|unit]
+ddev exec vendor/bin/codecept run --steps --debug --html
 
-### Codeception (Acceptance/Functional Tests)
-
-**Purpose**: End-to-end testing from user perspective
-
-```bash
-# Run all Codeception tests
-ddev exec vendor/bin/codecept run
-
-# Run specific suite
-ddev exec vendor/bin/codecept run acceptance
-ddev exec vendor/bin/codecept run functional
-ddev exec vendor/bin/codecept run unit
-
-# Run specific test
-ddev exec vendor/bin/codecept run acceptance LoginCest
-
-# Run with detailed output
-ddev exec vendor/bin/codecept run --steps --debug
-
-# Generate HTML report
-ddev exec vendor/bin/codecept run --html
-```
-
-**Test Organization**:
-```
-tests/
-├── acceptance/          # Browser-based acceptance tests
-├── functional/          # Functional tests without JavaScript
-├── unit/               # Unit tests
-├── _support/           # Helper classes and support code
-├── _data/              # Test fixtures and data
-├── _output/            # Test results and screenshots
-└── codeception.yml     # Configuration
-```
-
-### Test Best Practices
-
-**Writing Tests**:
-- Keep tests focused and atomic (one concept per test)
-- Use descriptive test method names: `testUserCanLoginWithValidCredentials()`
-- Add proper PHPDoc comments explaining what is being tested
-- Follow AAA pattern: Arrange, Act, Assert
-- Clean up test data in tearDown() methods
-- Use data providers for testing multiple scenarios
-- Test both positive (success) and negative (failure) scenarios
-
-**Test Data**:
-- Use fixtures for consistent test data
-- Avoid dependencies between tests
-- Reset state between tests
-- Use factories or builders for complex test objects
-
-**Assertions**:
-```php
-// PHPUnit assertions
-$this->assertEquals($expected, $actual);
-$this->assertTrue($condition);
-$this->assertInstanceOf(ClassName::class, $object);
-$this->assertCount(3, $array);
-$this->assertStringContainsString('needle', $haystack);
-```
-
-**When to Run Tests**:
-- Before committing code
-- After fixing bugs (write test first)
-- After refactoring
-- Before deploying to production
-- In CI/CD pipeline automatically
-
-### Debugging Failed Tests
-
-```bash
-# Run single test with verbose output
+# Debug failed tests
 ddev exec vendor/bin/phpunit --testdox --verbose [test-file]
-
-# Codeception with debugging
-ddev exec vendor/bin/codecept run --debug
-
-# Generate fresh screenshots on failure
-ddev exec vendor/bin/codecept run --steps
 ```
 
-Check test output, logs, and screenshots in `tests/_output/` directory.
+**Drupal test types** (in `tests/src/`): `Unit/` (isolated), `Kernel/` (minimal bootstrap), `Functional/` (full Drupal), `FunctionalJavascript/`
+
+**Codeception structure**: `tests/{acceptance,functional,unit,_support,_data,_output}/`, config: `codeception.yml`
+
+**Test Best Practices**:
+- Keep tests focused and atomic (one concept per test)
+- Use descriptive names: `testUserCanLoginWithValidCredentials()`
+- Follow AAA pattern: Arrange, Act, Assert
+- Clean up in `tearDown()`, use data providers for multiple scenarios
+- Test both positive and negative scenarios
+- Use fixtures, avoid dependencies between tests, reset state
 
 ## Debugging
 
-### Xdebug
-
-**Enable/Disable**:
 ```bash
-# Enable Xdebug
-ddev xdebug on
+# Xdebug
+ddev xdebug on|off                              # Toggle (disable when not debugging for perf)
 
-# Disable Xdebug (improves performance)
-ddev xdebug off
+# Container & DB access
+ddev ssh                                         # Web container
+ddev mysql                                       # MySQL CLI
+ddev mysql -e "SELECT..."                        # Direct query
+ddev export-db --file=backup.sql.gz             # Export
+ddev import-db --file=backup.sql.gz             # Import
 
-# Check Xdebug status
-ddev exec php -v | grep Xdebug
-```
-
-**IDE Configuration**:
-- PhpStorm: Configure PHP > Debug > Xdebug port 9003
-- VS Code: Install PHP Debug extension
-- Set breakpoints in your IDE
-- Start listening for debug connections
-
-**Performance Note**: Disable Xdebug when not actively debugging to improve performance.
-
-### Container Access
-
-```bash
-# SSH into web container
-ddev ssh
-
-# SSH as root user
-ddev ssh -s db
-
-# Execute command without SSH
-ddev exec [command]
-
-# Run composer commands
-ddev composer [command]
-```
-
-### Database Access
-
-```bash
-# MySQL CLI
-ddev mysql
-
-# Access specific database (multisite)
-ddev mysql -D [database_name]
-
-# Execute SQL query directly
-ddev mysql -e "SELECT * FROM node_field_data LIMIT 5;"
-
-# Export database
-ddev export-db --file=backup.sql.gz
-
-# Import database
-ddev import-db --file=backup.sql.gz
-```
-
-### Logs and Monitoring
-
-```bash
-# View container logs
-ddev logs
-
-# Follow logs in real-time
-ddev logs -f
-
-# View Drupal watchdog logs
-ddev drush watchdog:show
-
-# Tail recent watchdog entries
+# Logs
+ddev logs -f                                     # Container logs (follow)
 ddev drush watchdog:show --count=50 --severity=Error
 
-# View PHP error log
-ddev exec tail -f /var/log/php/php-fpm.log
+# State
+ddev drush state:get|set|delete [key] [value]
 ```
 
-### Cache and State Debugging
+**IDE**: PhpStorm (port 9003), VS Code (PHP Debug extension)
+**Tips**: `ddev describe` (URLs/services), `ddev debug` (DDEV issues), Twig debug in `development.services.yml`
+
+## Performance
 
 ```bash
-# Clear specific cache bin
-ddev drush cache:clear [bin_name]
+# Cache
+ddev drush cr                                    # Rebuild all
+ddev drush cache:clear [render|dynamic_page_cache|config]
 
-# Rebuild cache (synonym for cr)
-ddev drush cache:rebuild
+# Redis (if enabled)
+ddev redis-cli INFO stats|memory
+ddev redis-cli FLUSHALL                          # Clear Redis
 
-# Clear Twig cache specifically
-ddev drush twig:debug
-
-# Get state value
-ddev drush state:get [key]
-
-# Set state value
-ddev drush state:set [key] [value]
-
-# Delete state value
-ddev drush state:delete [key]
-```
-
-### Performance Profiling
-
-```bash
-# Check Redis status (if using Redis)
-ddev redis-cli
-# Then: INFO stats
-
-# Monitor disk usage
-ddev exec df -h
-
-# Check memory usage
-ddev exec free -m
-
-# Top processes
-ddev exec top
-
-# Check PHP memory limit
-ddev exec php -i | grep memory_limit
-```
-
-### Network Debugging
-
-```bash
-# Check network connectivity from container
-ddev exec curl -I https://example.com
-
-# Test DNS resolution
-ddev exec nslookup example.com
-
-# Check open ports
-ddev exec netstat -tulpn
-```
-
-### Debugging Tips
-
-- Use `ddev describe` to see all project URLs and services
-- Check `.ddev/config.yaml` for project configuration
-- Review `ddev logs` when containers fail to start
-- Use `ddev debug` for DDEV-specific issues
-- Enable Twig debugging in `development.services.yml`
-
-## Performance and Monitoring
-
-### Cache Management
-
-```bash
-# Clear all caches
-ddev drush cache:rebuild
-# Alias: ddev drush cr
-
-# Clear specific cache bins
-ddev drush cache:clear render
-ddev drush cache:clear dynamic_page_cache
-ddev drush cache:clear config
-
-# List all cache bins
-ddev drush cache:clear
-
-# Disable caches for development (in development.services.yml)
-# parameters:
-#   twig.config:
-#     debug: true
-#     auto_reload: true
-#     cache: false
-```
-
-### Redis Monitoring
-
-```bash
-# Access Redis CLI
-ddev redis-cli
-
-# Check Redis stats
-ddev redis-cli INFO stats
-
-# Check memory usage
-ddev redis-cli INFO memory
-
-# Monitor commands in real-time
-ddev redis-cli MONITOR
-
-# Check connected clients
-ddev redis-cli CLIENT LIST
-
-# Flush Redis cache
-ddev redis-cli FLUSHALL
-```
-
-### Performance Metrics
-
-```bash
-# Check disk usage
-ddev exec df -h
-
-# Check specific directory size
-ddev exec du -sh web/sites/default/files
-
-# Check memory usage
-ddev exec free -m
-
-# Monitor CPU and memory in real-time
-ddev exec top
-
-# Check PHP-FPM status
-ddev exec curl http://localhost/fpm-status
-
-# Check PHP memory limit
-ddev exec php -i | grep memory_limit
-```
-
-### Database Performance
-
-```bash
-# Check database size
-ddev mysql -e "SELECT table_schema AS 'Database', ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) AS 'Size (MB)' FROM information_schema.TABLES GROUP BY table_schema;"
-
-# Show slow queries log
+# DB performance
+ddev mysql -e "SELECT table_name, round(((data_length+index_length)/1024/1024),2) 'MB' FROM information_schema.TABLES WHERE table_schema=DATABASE() ORDER BY (data_length+index_length) DESC;"
 ddev mysql -e "SHOW VARIABLES LIKE 'slow_query%';"
-
-# Optimize tables
-ddev drush sql:query "OPTIMIZE TABLE cache_bootstrap, cache_config, cache_container, cache_data, cache_default, cache_discovery, cache_dynamic_page_cache, cache_entity, cache_menu, cache_render, cache_toolbar;"
-
-# Show table sizes
-ddev mysql -e "SELECT table_name AS 'Table', round(((data_length + index_length) / 1024 / 1024), 2) 'Size in MB' FROM information_schema.TABLES WHERE table_schema = DATABASE() ORDER BY (data_length + index_length) DESC;"
+ddev drush sql:query "OPTIMIZE TABLE cache_bootstrap, cache_config, cache_data, cache_default, cache_discovery, cache_dynamic_page_cache, cache_entity, cache_menu, cache_render;"
 ```
 
-### Performance Monitoring Commands
-
-```bash
-# Check Drupal cron status
-ddev drush core:cron
-
-# View system status
-ddev drush status
-
-# Check for pending updates
-ddev drush updatedb:status
-
-# Profile page load with Drush
-ddev drush php:eval "timer_start('test'); node_load(1); \$time = timer_stop('test'); print(\$time['time'] . ' ms');"
-```
-
-### Optimization Checklist
-
-- **Caching**:
-  - Enable page caching for anonymous users
-  - Enable dynamic page cache
-  - Use Redis/Memcache for backend caching
-  - Configure appropriate cache max-age
-
-- **Aggregation**:
-  - Enable CSS aggregation
-  - Enable JavaScript aggregation
-  - Consider using AdvAgg module for advanced aggregation
-
-- **Database**:
-  - Regular cache table truncation
-  - Optimize tables periodically
-  - Monitor slow queries
-  - Consider read replicas for high traffic
-
-- **File System**:
-  - Use CDN for static assets
-  - Optimize images (use image styles)
-  - Enable lazy loading for images
-  - Clean up old files regularly
-
-- **Code**:
-  - Use dependency injection
-  - Implement proper caching strategies
-  - Avoid loading unnecessary entities
-  - Use Queue API for heavy operations
+**Optimization**: Enable page cache + dynamic page cache, CSS/JS aggregation, Redis/Memcache, CDN for assets, image styles with lazy loading
 
 ## Code Standards
 
