@@ -12,6 +12,8 @@ Instead of explaining your project structure every time, AI reads AGENTS.md once
 
 **Result:** AI provides accurate, project-specific code from day one.
 
+**Note:** This template assumes DDEV-based development environment.
+
 ## Quick Start
 
 **Step 1:** Download the template to your project root:
@@ -81,10 +83,12 @@ Please:
 
 2. Read AGENTS-TEMPLATE.md and follow all HTML comment guides (HOW TO DISCOVER...)
 3. Execute all discovery steps from Phase 1
-4. Replace all placeholders from Phase 2
-5. Fill sections from Phase 3
-6. Cleanup from Phase 4
-7. Finalize from Phase 5
+4. **STOP after Phase 1** - show me what you found and wait for my confirmation before proceeding
+5. If you're unsure about ANY value (prefix, theme name, etc.) - ASK, don't guess
+6. Replace all placeholders from Phase 2
+7. Fill sections from Phase 3
+8. Cleanup from Phase 4
+9. Finalize from Phase 5
 
 After customization, show me:
 - What you found in the project
