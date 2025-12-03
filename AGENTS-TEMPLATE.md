@@ -193,14 +193,6 @@ ddev exec vendor/bin/phpunit --testdox --verbose [test-file]
 
 **Codeception structure**: `tests/{acceptance,functional,unit,_support,_data,_output}/`, config: `codeception.yml`
 
-**Test Best Practices**:
-- Keep tests focused and atomic (one concept per test)
-- Use descriptive names: `testUserCanLoginWithValidCredentials()`
-- Follow AAA pattern: Arrange, Act, Assert
-- Clean up in `tearDown()`, use data providers for multiple scenarios
-- Test both positive and negative scenarios
-- Use fixtures, avoid dependencies between tests, reset state
-
 ## Debugging
 
 ```bash
@@ -519,19 +511,11 @@ On-page: title tags (50-60 chars), meta descriptions (150-160), H1 unique, clean
 Technical: sitemap submitted, robots.txt, canonical URLs, Schema.org, HTTPS, Core Web Vitals
 Multilingual: hreflang tags, language-specific sitemaps, canonical per language
 
-**SEO Audit Tools**:
-- Screaming Frog SEO Spider
-- Ahrefs Site Audit
-- SEMrush Site Audit
-- Moz Pro
-
-## JavaScript and CSS
-
-**JS Aggregation Issues**: Missing `.libraries.yml` dependencies, wrong load order, `drupalSettings` unavailable
-**Solutions**: Add deps (`core/jquery`, `core/drupal`, `core/drupalSettings`, `core/once`), use `once()` not `.once()`, test with aggregation enabled
-**CSS**: BEM naming, SCSS/SASS, organize by component, use SDC when applicable
-
 ## Frontend Development
+
+**JS Aggregation Issues**: Missing `.libraries.yml` deps, wrong load order, `drupalSettings` unavailable → Add deps (`core/jquery`, `core/drupal`, `core/drupalSettings`, `core/once`), use `once()` not `.once()`, test with aggregation enabled
+
+**CSS**: BEM naming, SCSS/SASS, organize by component, use SDC when applicable
 
 <!--
 THEME DISCOVERY FOR AI/LLM:
@@ -681,12 +665,6 @@ ddev drush role:perm:list [role]                                  # List
 # PHP: user_role_grant_permissions($role_id, ['perm1']); drupal_flush_all_caches();
 ```
 
-### Config Export/Import
-```bash
-ddev drush cex && git diff config/ && git commit                  # Export
-ddev drush cim -y                                                 # Import
-```
-
 ## Troubleshooting
 
 ### Quick Fixes
@@ -696,10 +674,6 @@ ddev restart                                                      # Restart cont
 ddev xdebug on|off                                               # Debug mode
 ddev drush watchdog:show --count=50                              # Check logs
 ```
-
-### JS Aggregation Issues
-Add deps in `.libraries.yml`: `core/drupal`, `core/jquery`, `core/drupalSettings`, `core/once`
-Use `once()` function, check browser console, test with aggregation enabled
 
 ### Cache Not Clearing
 ```bash
@@ -905,15 +879,11 @@ echo json_encode(\$result, JSON_PRETTY_PRINT);
 
 ## Drupal Entities Structure
 
-Complete reference of content types, media types, taxonomies, and custom entities in this project.
+Complete reference of content types, media types, taxonomies, and custom entities. See "HOW TO DISCOVER FULL ENTITY STRUCTURE" guide above for discovery commands.
 
 ### Content Types (Node Bundles)
 
-<!--
-Document all content types in the project. Update this section during customization.
-
-Example format:
--->
+<!-- Document all content types in the project. -->
 
 ```toon
 content_types[2]{machine_name,label,description,features,key_fields}:
@@ -921,26 +891,9 @@ content_types[2]{machine_name,label,description,features,key_fields}:
   page,Basic Page,Static pages,"revisions,menu_ui","body,field_sections"
 ```
 
-**Discovery**: See "HOW TO DISCOVER FULL ENTITY STRUCTURE" guide above. Quick commands:
-```bash
-ddev drush entity:bundle-info node        # List all content types
-ls config/sync/node.type.*.yml            # Config files (PRIMARY SOURCE)
-ddev drush field:list node article        # Fields for specific type
-```
-
 ### Paragraph Types
 
-<!--
-Document paragraph types if using Paragraphs module.
-Organize by category for better readability.
--->
-
-**Discovery**: See "HOW TO DISCOVER FULL ENTITY STRUCTURE" guide above. Quick commands:
-```bash
-ddev drush entity:bundle-info paragraph       # List all paragraph types
-ls config/sync/paragraphs.paragraphs_type.*.yml  # Config files (PRIMARY SOURCE)
-ddev drush field:list paragraph text          # Fields for specific type
-```
+<!-- Document paragraph types if using Paragraphs module. -->
 
 ```toon
 paragraph_types:
@@ -951,13 +904,6 @@ paragraph_types:
 
 ### Media Types
 
-**Discovery**: See "HOW TO DISCOVER FULL ENTITY STRUCTURE" guide above. Quick commands:
-```bash
-ddev drush entity:bundle-info media    # List all media types
-ls config/sync/media.type.*.yml        # Config files (PRIMARY SOURCE)
-ddev drush field:list media image      # Fields for specific type
-```
-
 ```toon
 media_types[3]{machine_name,label,source,source_field}:
   image,Image,image,field_media_image
@@ -967,13 +913,6 @@ media_types[3]{machine_name,label,source,source_field}:
 
 ### Taxonomy Vocabularies
 
-**Discovery**: See "HOW TO DISCOVER FULL ENTITY STRUCTURE" guide above. Quick commands:
-```bash
-ddev drush entity:bundle-info taxonomy_term   # List all vocabularies
-ls config/sync/taxonomy.vocabulary.*.yml      # Config files (PRIMARY SOURCE)
-ddev drush field:list taxonomy_term tags      # Fields for specific vocabulary
-```
-
 ```toon
 taxonomies[2]{machine_name,label,description,hierarchy}:
   tags,Tags,Content tagging,false
@@ -982,15 +921,7 @@ taxonomies[2]{machine_name,label,description,hierarchy}:
 
 ### Custom Entities
 
-<!--
-Document custom content entities here if project has any.
--->
-
-**Discovery**: See "HOW TO DISCOVER FULL ENTITY STRUCTURE" guide above. Quick commands:
-```bash
-ddev drush entity:info                        # List ALL entity types
-ls web/modules/custom/*/src/Entity/*.php      # Find custom entity classes
-```
+<!-- Document custom content entities here if project has any. -->
 
 ```toon
 custom_entities:
@@ -1037,12 +968,6 @@ Use this section to explain how entities connect.
 
 ### View Modes
 
-**Discovery**: See "HOW TO DISCOVER FULL ENTITY STRUCTURE" guide above. Quick commands:
-```bash
-ls config/sync/core.entity_view_mode.*.yml       # View mode definitions
-ls config/sync/core.entity_view_display.node.*.yml  # Node view displays
-```
-
 **Node View Modes**:
 - `full` - Full content display
 - `teaser` - Summary/card display
@@ -1074,39 +999,7 @@ define('CUSTOM_ENTITY_REJECTED', 2);
 
 ### Entity Access Patterns
 
-**Common access patterns**:
-- View published content: `access content` permission
-- Edit own content: `edit own [type] content` permission
-- Delete own content: `delete own [type] content` permission
-- Administer content: `administer [type] content` permission
-
-### Entity Queries
-
-**Common query patterns for this project**:
-
-```php
-// Query nodes
-$query = \Drupal::entityTypeManager()->getStorage('node')->getQuery()
-  ->condition('type', 'article')
-  ->condition('status', 1)
-  ->accessCheck(TRUE)
-  ->sort('created', 'DESC')
-  ->range(0, 10);
-$nids = $query->execute();
-
-// Query with relationships
-$query = \Drupal::entityTypeManager()->getStorage('node')->getQuery()
-  ->condition('type', 'article')
-  ->condition('field_category.entity.name', 'Technology')
-  ->accessCheck(TRUE);
-$nids = $query->execute();
-
-// Query custom entities
-$query = \Drupal::entityTypeManager()->getStorage('custom_entity')->getQuery()
-  ->condition('status', CUSTOM_ENTITY_APPROVED)
-  ->accessCheck(TRUE);
-$ids = $query->execute();
-```
+- View: `access content` | Edit own: `edit own [type] content` | Delete own: `delete own [type] content` | Admin: `administer [type] content`
 
 ### Migration Patterns
 
@@ -1169,34 +1062,3 @@ Examples:
 2024-01-13 | NOTE: Custom entity queries must include ->accessCheck(TRUE/FALSE)
 ```
 
----
-
-<!--
-===========================================
-TEMPLATE CUSTOMIZATION CHECKLIST
-===========================================
-
-For the full customization checklist with phases, see README.md in the repository:
-https://github.com/droptica/drupal-agents-md
-
-The checklist includes:
-- Phase 1: Project Discovery (composer.json, web root, modules, theme, entities)
-- Phase 2: Replace Placeholders ([PROJECT_NAME], [VERSION], web/, etc.)
-- Phase 3: Fill Project-Specific Sections (entities, modules, languages)
-- Phase 4: Cleanup (remove inapplicable commented sections)
-- Phase 5: Finalize (save as AGENTS.md, summary)
-
-Required placeholder replacements:
-- [PROJECT_NAME], [VERSION], [PHP_VERSION], [REPOSITORY_URL]
-- [PROJECT_DIR], [BUILD_COMMAND], [prefix], [theme_name]
-- web/ (if your web root is different: docroot/, html/, etc.)
-
-Optional sections to uncomment if applicable:
-- Multisite, AI Integration, Commerce/Payment, Config Split/Ignore
-
----
-
-**Last Updated**: [Add date when customization completed]
-**Customized By**: [Add your name]
-**Project Start Date**: [Add project start date]
--->
