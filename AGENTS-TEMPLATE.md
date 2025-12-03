@@ -1152,86 +1152,21 @@ Examples:
 
 ## Tasks and Problems Log
 
-**MANDATORY**: Update this section after completing tasks or solving problems during each development session.
+**Format**: `YYYY-MM-DD | [TYPE] Description` — Types: TASK, PROBLEM/SOLUTION, CONFIG, PERF, SECURITY, NOTE
 
-**Format**: `YYYY-MM-DD | Brief description of task/problem and solution`
-
-**Instructions**:
-1. Run `date` command to get current date before adding entries
-2. Add new entries at the top (most recent first)
-3. Keep entries concise and actionable
-4. Include relevant file paths, module names, or configuration keys
-5. Document both what was done and why it was necessary
-
-### Completed Tasks
+Run `date` first. Add new entries at top. Include file paths, module names, config keys.
 
 ```
-[Add completed tasks here following the format]
+[Add entries here - newest first]
 
-Example:
-2024-01-15 | Created custom module d_custom_feature for handling special workflow
-2024-01-14 | Updated Drupal core from 10.1.0 to 10.2.0, ran database updates successfully
-2024-01-13 | Fixed JavaScript aggregation issue by adding missing core/once dependency
-```
-
-### Problems and Solutions
-
-```
-[Add problems and solutions here]
-
-Example format:
-2024-01-15 | PROBLEM: Configuration import failing with UUID mismatch
-          | SOLUTION: Updated system.site UUID using drush config:set system.site uuid [correct-uuid]
-
-2024-01-14 | PROBLEM: Drush commands timing out with memory exhausted error
-          | SOLUTION: Increased PHP memory limit in .ddev/php/php.ini to 512M, restarted DDEV
-
-2024-01-13 | PROBLEM: Custom module not appearing in module list
-          | SOLUTION: Fixed .info.yml syntax error (missing space after colon), cleared cache
-```
-
-### Configuration Changes
-
-```
-[Document significant configuration changes]
-
-Example:
-2024-01-15 | Enabled Redis cache backend in settings.php
-2024-01-14 | Configured TPay payment gateway with sandbox credentials
-2024-01-13 | Updated environment indicator color scheme (dev=blue, staging=orange, prod=red)
-```
-
-### Performance Optimizations
-
-```
-[Document performance improvements]
-
-Example:
-2024-01-15 | Enabled CSS/JS aggregation and AdvAgg module
-2024-01-14 | Optimized database by truncating old cache tables
-2024-01-13 | Implemented lazy loading for images using native loading="lazy"
-```
-
-### Security Updates
-
-```
-[Document security-related changes]
-
-Example:
-2024-01-15 | Applied security update for Drupal core 10.1.8
-2024-01-14 | Updated webform module to address SA-CONTRIB-2024-001
-2024-01-13 | Hardened file permissions on settings.php (chmod 444)
-```
-
-### Development Notes
-
-```
-[General development notes and observations]
-
-Example:
-2024-01-15 | Note: Custom entity queries must include ->accessCheck(TRUE/FALSE)
-2024-01-14 | Note: When using Config Split, remember to activate splits in settings.php
-2024-01-13 | Note: DDEV custom commands must NOT use ## #ddev-generated comments
+Examples:
+2024-01-15 | TASK: Created custom module d_custom_feature for special workflow
+2024-01-15 | PROBLEM: Config import failing with UUID mismatch
+          | SOLUTION: drush config:set system.site uuid [correct-uuid]
+2024-01-14 | CONFIG: Enabled Redis cache backend in settings.php
+2024-01-14 | PERF: Enabled CSS/JS aggregation and AdvAgg module
+2024-01-13 | SECURITY: Applied security update for Drupal core 10.1.8
+2024-01-13 | NOTE: Custom entity queries must include ->accessCheck(TRUE/FALSE)
 ```
 
 ---
