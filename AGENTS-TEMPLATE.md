@@ -56,18 +56,8 @@ API keys in environment variables
 
 ## Date Verification Rule
 
-**CRITICAL**: Before writing ANY date to `.md` or documentation files, ALWAYS check the current system date first.
-
-```bash
-# Always run this command first before documenting
-date
-```
-
-**Important**:
-- Never use example dates like "2024-01-01" or assume the current date
-- Always use the actual system date from the `date` command
-- This ensures documentation timestamps are accurate and traceable
-- Apply this rule when updating TASKS_AND_PROBLEMS.md or any documentation
+**CRITICAL**: Before writing dates to `.md` files, run `date` command first.
+Never use example dates (e.g., "2024-01-01") - always use actual system date.
 
 ## Git Workflow & Branching Strategy
 
