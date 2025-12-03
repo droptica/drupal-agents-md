@@ -428,631 +428,96 @@ ddev drush watchdog:show --severity=Error --count=100
 
 ## Headless/API-First Development
 
-### JSON:API (Core Module)
+### JSON:API (Core)
 
-**JSON:API** is included in Drupal core and provides a complete REST API for all content entities.
-
-**Enable JSON:API**:
 ```bash
-# Enable module
 ddev drush pm:enable jsonapi
-
-# Optional: Enable extras module for better DX
-ddev composer require drupal/jsonapi_extras
-ddev drush pm:enable jsonapi_extras
+# Optional: ddev composer require drupal/jsonapi_extras
 ```
 
-**Basic Usage**:
-
-**Get all articles**:
-```bash
-GET /jsonapi/node/article
+**Endpoints**:
+```
+GET  /jsonapi/node/article                                    # List all
+GET  /jsonapi/node/article/{uuid}?include=field_image,uid    # With relations
+GET  /jsonapi/node/article?filter[status]=1&sort=-created&page[limit]=10
+POST /jsonapi/node/article  (Content-Type: application/vnd.api+json, Authorization: Bearer {token})
 ```
 
-**Get specific article**:
-```bash
-GET /jsonapi/node/article/{uuid}
-```
-
-**Get article with relationships**:
-```bash
-GET /jsonapi/node/article/{uuid}?include=field_image,uid
-```
-
-**Filter articles**:
-```bash
-GET /jsonapi/node/article?filter[status]=1&filter[field_category.name]=Technology
-```
-
-**Sort articles**:
-```bash
-GET /jsonapi/node/article?sort=-created
-```
-
-**Pagination**:
-```bash
-GET /jsonapi/node/article?page[limit]=10&page[offset]=20
-```
-
-**Create content via API**:
-```bash
-POST /jsonapi/node/article
-Content-Type: application/vnd.api+json
-Authorization: Bearer {token}
-
-{
-  "data": {
-    "type": "node--article",
-    "attributes": {
-      "title": "New Article",
-      "body": {
-        "value": "Content here",
-        "format": "basic_html"
-      }
-    }
-  }
-}
-```
-
-### GraphQL Integration
-
-**Install GraphQL Module**:
-```bash
-ddev composer require drupal/graphql
-ddev drush pm:enable graphql
-
-# Install GraphQL Compose for automatic schema generation
-ddev composer require drupal/graphql_compose
-ddev drush pm:enable graphql_compose
-```
-
-**GraphQL Explorer**:
-- Access at: `/admin/config/graphql`
-- Built-in GraphiQL interface for testing queries
-
-**Example Query**:
-```graphql
-query {
-  nodeArticles(first: 10) {
-    nodes {
-      id
-      title
-      body {
-        value
-      }
-      created
-      author {
-        name
-      }
-    }
-  }
-}
-```
-
-**Example Mutation**:
-```graphql
-mutation {
-  createArticle(
-    title: "New Article"
-    body: "Article content"
-  ) {
-    entity {
-      id
-      title
-    }
-  }
-}
-```
-
-### API Authentication
-
-**Simple OAuth (Recommended)**:
+### GraphQL
 
 ```bash
-# Install Simple OAuth
-ddev composer require drupal/simple_oauth
-ddev drush pm:enable simple_oauth
-
-# Generate keys
-mkdir -p keys
-openssl genrsa -out keys/private.key 2048
-openssl rsa -in keys/private.key -pubout -out keys/public.key
-chmod 600 keys/*.key
-
-# Configure at /admin/config/people/simple_oauth
+ddev composer require drupal/graphql drupal/graphql_compose
+ddev drush pm:enable graphql graphql_compose
+# Explorer at /admin/config/graphql
 ```
 
-**Get Access Token**:
+### Authentication (Simple OAuth)
+
 ```bash
-POST /oauth/token
-Content-Type: application/x-www-form-urlencoded
-
-grant_type=password
-&client_id={client_id}
-&client_secret={client_secret}
-&username={username}
-&password={password}
+ddev composer require drupal/simple_oauth && ddev drush pm:enable simple_oauth
+openssl genrsa -out keys/private.key 2048 && openssl rsa -in keys/private.key -pubout -out keys/public.key
+# POST /oauth/token with grant_type, client_id, client_secret, username, password
+# Use: Authorization: Bearer {access_token}
 ```
 
-**Use Token in Requests**:
-```bash
-GET /jsonapi/node/article
-Authorization: Bearer {access_token}
-```
-
-### CORS Configuration
-
-**Enable CORS** for headless frontend (in `services.yml`):
+### CORS (in services.yml)
 
 ```yaml
 cors.config:
   enabled: true
-  allowedOrigins: ['http://localhost:3000', 'https://yourdomain.com']
+  allowedOrigins: ['http://localhost:3000']
   allowedMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS']
   allowedHeaders: ['*']
-  exposedHeaders: false
-  maxAge: 1000
   supportsCredentials: true
 ```
 
-**Or use CORS module**:
-```bash
-ddev composer require drupal/cors
-ddev drush pm:enable cors
-# Configure at /admin/config/services/cors
-```
+### Architecture Patterns
 
-### Decoupled Architecture Patterns
+- **Fully Decoupled**: Drupal API + React/Vue/Next.js frontend
+- **Progressively Decoupled**: Drupal pages + JS framework for interactive components
+- **Hybrid**: Mix of Drupal templates and API-driven sections
 
-**1. Fully Decoupled** (Headless):
-- Drupal as pure API backend
-- Separate frontend (React, Vue, Next.js)
-- Complete design freedom
-- Best for: Mobile apps, multiple frontends
+### API Best Practices
 
-**2. Progressively Decoupled**:
-- Drupal renders some pages
-- JavaScript framework for interactive components
-- Best for: Existing sites adding modern UI
-
-**3. Hybrid**:
-- Mix of Drupal templates and API-driven sections
-- Best for: Gradual migration
-
-### Frontend Frameworks Integration
-
-**Next.js (React)**:
-```javascript
-// Example: Fetch articles from Drupal
-export async function getStaticProps() {
-  const res = await fetch('https://drupal.site/jsonapi/node/article')
-  const data = await res.json()
-
-  return {
-    props: {
-      articles: data.data
-    }
-  }
-}
-```
-
-**Nuxt.js (Vue)**:
-```javascript
-// Example: Fetch articles
-export default {
-  async asyncData({ $axios }) {
-    const articles = await $axios.$get('/jsonapi/node/article')
-    return { articles: articles.data }
-  }
-}
-```
-
-### API Performance Optimization
-
-**Enable Caching**:
-```bash
-# Configure cache in settings.php
-$settings['cache']['bins']['jsonapi_normalizations'] = 'cache.backend.database';
-
-# Enable BigPipe for progressive rendering
-$settings['container_yamls'][] = 'modules/contrib/big_pipe/big_pipe.services.yml';
-```
-
-**Use Subrequests Module**:
-```bash
-# Batch multiple API calls
-ddev composer require drupal/subrequests
-ddev drush pm:enable subrequests
-
-# Make batch request
-POST /subrequests?_format=json
-[
-  {"uri": "/jsonapi/node/article/123"},
-  {"uri": "/jsonapi/node/article/456"}
-]
-```
-
-### API Security Best Practices
-
-- ✅ Use OAuth tokens, not basic auth
-- ✅ Implement rate limiting (use `rate_limiter` module)
-- ✅ Validate all input data
-- ✅ Use HTTPS in production
-- ✅ Limit API access with permissions
-- ✅ Monitor API usage and errors
-- ✅ Version your API endpoints
-- ✅ Document API for consumers
-
-### API Documentation
-
-**Use OpenAPI/Swagger**:
-```bash
-# Install OpenAPI module
-ddev composer require drupal/openapi
-ddev drush pm:enable openapi openapi_ui
-
-# View documentation
-# Visit: /admin/config/services/openapi
-```
-
-**Or use Schemata**:
-```bash
-ddev composer require drupal/schemata
-ddev drush pm:enable schemata schemata_json_schema
-
-# Generate JSON schemas
-# Visit: /schemata/[entity_type]/[bundle]
-```
-
-### Testing API Endpoints
-
-```bash
-# Test with curl
-curl -X GET "https://drupal.site/jsonapi/node/article" \
-  -H "Accept: application/vnd.api+json"
-
-# Test authenticated endpoint
-curl -X GET "https://drupal.site/jsonapi/node/article" \
-  -H "Authorization: Bearer {token}" \
-  -H "Accept: application/vnd.api+json"
-
-# Test POST
-curl -X POST "https://drupal.site/jsonapi/node/article" \
-  -H "Authorization: Bearer {token}" \
-  -H "Content-Type: application/vnd.api+json" \
-  -d '{"data":{"type":"node--article","attributes":{"title":"Test"}}}'
-```
+OAuth tokens (not basic auth), rate limiting, HTTPS, validate input, API documentation (`drupal/openapi`)
 
 ## SEO & Structured Data
 
-### Core SEO Modules
-
-**Metatag Module** (Essential):
-```bash
-ddev composer require drupal/metatag
-ddev drush pm:enable metatag metatag_open_graph metatag_twitter_cards
-```
-
-**Pathauto** (Clean URLs):
-```bash
-ddev composer require drupal/pathauto
-ddev drush pm:enable pathauto
-```
-
-**Simple XML Sitemap**:
-```bash
-ddev composer require drupal/simple_sitemap
-ddev drush pm:enable simple_sitemap
-
-# Generate sitemap
-ddev drush simple-sitemap:generate
-
-# Access at: /sitemap.xml
-```
-
-**Redirect Module** (301/302 redirects):
-```bash
-ddev composer require drupal/redirect
-ddev drush pm:enable redirect
-```
-
-### Schema.org Structured Data
-
-**Schema.org Metatag Module**:
-```bash
-ddev composer require drupal/schema_metatag
-ddev drush pm:enable schema_metatag schema_article schema_organization schema_web_page
-```
-
-**Configure Schema.org**:
-
-1. **Organization Schema** (Site-wide):
-   - Navigate to: `/admin/config/search/metatag/global`
-   - Enable "Schema.org" tab
-   - Add Organization schema:
-   ```json
-   {
-     "@type": "Organization",
-     "name": "[Site Name]",
-     "url": "[Site URL]",
-     "logo": "[Logo URL]",
-     "sameAs": [
-       "[Facebook URL]",
-       "[Twitter URL]",
-       "[LinkedIn URL]"
-     ]
-   }
-   ```
-
-2. **Article Schema** (Content type):
-   - Navigate to: `/admin/structure/types/manage/article/fields`
-   - Add Schema.org fields or use tokens:
-   ```json
-   {
-     "@type": "Article",
-     "headline": "[node:title]",
-     "datePublished": "[node:created:html_datetime]",
-     "dateModified": "[node:changed:html_datetime]",
-     "author": {
-       "@type": "Person",
-       "name": "[node:author:display-name]"
-     },
-     "image": "[node:field_image:entity:url]",
-     "publisher": {
-       "@type": "Organization",
-       "name": "[site:name]",
-       "logo": "[site:logo]"
-     }
-   }
-   ```
-
-3. **Breadcrumb Schema**:
-   ```json
-   {
-     "@type": "BreadcrumbList",
-     "itemListElement": [
-       {
-         "@type": "ListItem",
-         "position": 1,
-         "name": "Home",
-         "item": "[site:url]"
-       }
-     ]
-   }
-   ```
-
-### Open Graph & Twitter Cards
-
-**Open Graph Tags** (Facebook, LinkedIn):
-```yaml
-# Configure at /admin/structure/types/manage/[content_type]/fields
-
-og:title: "[node:title]"
-og:description: "[node:summary]"
-og:image: "[node:field_image:entity:url]"
-og:url: "[current-page:url]"
-og:type: "article"
-og:site_name: "[site:name]"
-```
-
-**Twitter Card Tags**:
-```yaml
-twitter:card: "summary_large_image"
-twitter:site: "@yourtwitterhandle"
-twitter:title: "[node:title]"
-twitter:description: "[node:summary]"
-twitter:image: "[node:field_image:entity:url]"
-```
-
-### Hreflang for Multilingual Sites
-
-**Using Hreflang module**:
-```bash
-ddev composer require drupal/hreflang
-ddev drush pm:enable hreflang
-
-# Configure at /admin/config/search/hreflang
-```
-
-**Manual implementation in template**:
-```twig
-{# In html.html.twig #}
-{% for langcode, language in languages %}
-  <link rel="alternate" hreflang="{{ langcode }}" href="{{ path('<current>', {}, {'language': language}) }}" />
-{% endfor %}
-```
-
-### Robots.txt & Robots Meta Tags
-
-**Robots.txt**:
-```bash
-# Edit web/robots.txt
-User-agent: *
-Disallow: /admin/
-Disallow: /user/
-Disallow: /search/
-Allow: /
-
-Sitemap: https://yoursite.com/sitemap.xml
-```
-
-**RobotsTxt module** (manage via UI):
-```bash
-ddev composer require drupal/robotstxt
-ddev drush pm:enable robotstxt
-
-# Configure at /admin/config/search/robotstxt
-```
-
-**Robots Meta Tags**:
-```yaml
-# Per content type at /admin/structure/types/manage/[type]/fields
-
-robots: "index, follow"
-# or for no-index:
-robots: "noindex, nofollow"
-```
-
-### Canonical URLs
-
-**Configure Canonical**:
-```yaml
-# Via Metatag module
-canonical_url: "[current-page:url:absolute]"
-
-# For content types
-canonical_url: "[node:url:absolute]"
-```
-
-**For Multilingual**:
-- Ensure each language version has its own canonical
-- Use hreflang to link language versions
-
-### XML Sitemap Configuration
+### Core Modules
 
 ```bash
-# Configure Simple XML Sitemap
-# Visit: /admin/config/search/simplesitemap
-
-# Settings to configure:
-# - Base URL
-# - Include content types
-# - Update frequency
-# - Priority
-
-# Generate sitemap
-ddev drush simple-sitemap:generate
-
-# Rebuild sitemap
-ddev drush simple-sitemap:rebuild-queue
+ddev composer require drupal/metatag drupal/pathauto drupal/simple_sitemap drupal/redirect drupal/schema_metatag
+ddev drush pm:enable metatag metatag_open_graph metatag_twitter_cards pathauto simple_sitemap redirect schema_metatag
+ddev drush simple-sitemap:generate    # Generate sitemap at /sitemap.xml
+ddev drush pathauto:generate          # Generate URL aliases
 ```
 
-**Multi-site Sitemaps**:
-```yaml
-# config/sync/simple_sitemap.settings.yml
-engines:
-  google: true
-  bing: true
-variants:
-  default:
-    label: 'Default sitemap'
-    types:
-      node:
-        - article
-        - page
-```
+### Schema.org & Open Graph
 
-### SEO-Friendly URLs
+Configure at `/admin/config/search/metatag/global`:
+- **Organization**: `@type: Organization`, name, url, logo, sameAs
+- **Article**: `@type: Article`, headline `[node:title]`, datePublished, author, image
+- **Open Graph**: og:title, og:description, og:image, og:url
+- **Twitter Cards**: twitter:card `summary_large_image`, twitter:title, twitter:image
 
-**Pathauto Patterns**:
-```yaml
-# Configure at /admin/config/search/path/patterns
+### Multilingual SEO
 
-# Articles: /blog/[node:title]
-# Pages: /[node:title]
-# Terms: /category/[term:name]
-
-# Bulk generate paths
-ddev drush pathauto:generate
-
-# Update existing paths
-ddev drush pathauto:update-all
-```
-
-### Performance for SEO
-
-**Image Optimization**:
-- Use WebP format when possible
-- Implement lazy loading
-- Use responsive images (image styles)
-- Add proper alt attributes
-
-**Page Speed**:
 ```bash
-# Enable caching
-ddev drush config:set system.performance css.preprocess 1
-ddev drush config:set system.performance js.preprocess 1
-
-# Enable BigPipe
-ddev drush pm:enable big_pipe
-
-# Check Core Web Vitals
-# Use Google PageSpeed Insights
-# Use Lighthouse in Chrome DevTools
+ddev composer require drupal/hreflang && ddev drush pm:enable hreflang
 ```
+Twig: `{% for lang in languages %}<link rel="alternate" hreflang="{{ lang.id }}" href="..."/>{% endfor %}`
 
-### SEO Testing & Validation
+### Performance
 
-**Test Structured Data**:
-- Google Rich Results Test: https://search.google.com/test/rich-results
-- Schema.org Validator: https://validator.schema.org/
+CSS/JS aggregation, BigPipe, WebP images, lazy loading, responsive image styles
 
-**Test Open Graph**:
-- Facebook Sharing Debugger: https://developers.facebook.com/tools/debug/
-- LinkedIn Post Inspector: https://www.linkedin.com/post-inspector/
-
-**Test Twitter Cards**:
-- Twitter Card Validator: https://cards-dev.twitter.com/validator
-
-**Check Sitemaps**:
-```bash
-# Validate sitemap XML
-curl https://yoursite.com/sitemap.xml
-
-# Submit to Google Search Console
-# Submit to Bing Webmaster Tools
-```
+**Testing**: Google Rich Results Test, Facebook Sharing Debugger, PageSpeed Insights
 
 ### SEO Checklist
 
-**On-Page SEO**:
-- [ ] Title tags optimized (50-60 characters)
-- [ ] Meta descriptions (150-160 characters)
-- [ ] H1 tag present and unique per page
-- [ ] URL structure clean and descriptive
-- [ ] Images have alt attributes
-- [ ] Internal linking implemented
-- [ ] Content is unique and valuable
-- [ ] Mobile-friendly responsive design
-
-**Technical SEO**:
-- [ ] XML sitemap generated and submitted
-- [ ] Robots.txt configured
-- [ ] Canonical URLs set
-- [ ] Schema.org markup implemented
-- [ ] HTTPS enabled
-- [ ] Page speed optimized (Core Web Vitals)
-- [ ] 404 pages handled properly
-- [ ] Redirects (301) for changed URLs
-
-**Multilingual SEO**:
-- [ ] Hreflang tags implemented
-- [ ] Language-specific sitemaps
-- [ ] Canonical URLs per language
-- [ ] Localized content (not just translated)
-
-### Monitoring SEO Performance
-
-**Google Search Console**:
-```bash
-# Add site property
-# Verify ownership (via DNS or HTML file)
-# Submit sitemap
-# Monitor:
-#   - Index coverage
-#   - Performance (clicks, impressions)
-#   - Core Web Vitals
-#   - Mobile usability
-```
-
-**Google Analytics 4**:
-```bash
-# Install Google Analytics module
-ddev composer require drupal/google_analytics
-ddev drush pm:enable google_analytics
-
-# Configure at /admin/config/system/google-analytics
-```
+On-page: title tags (50-60 chars), meta descriptions (150-160), H1 unique, clean URLs, alt attributes
+Technical: sitemap submitted, robots.txt, canonical URLs, Schema.org, HTTPS, Core Web Vitals
+Multilingual: hreflang tags, language-specific sitemaps, canonical per language
 
 **SEO Audit Tools**:
 - Screaming Frog SEO Spider
