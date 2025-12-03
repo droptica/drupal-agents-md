@@ -3902,33 +3902,10 @@ Document all content types in the project. Update this section during customizat
 Example format:
 -->
 
-```json
-{
-  "content_types": {
-    "article": {
-      "machine_name": "article",
-      "label": "Article",
-      "description": "News and blog posts",
-      "features": ["revisions", "menu_ui", "content_translation"],
-      "key_fields": [
-        "body",
-        "field_image",
-        "field_tags",
-        "field_category"
-      ]
-    },
-    "page": {
-      "machine_name": "page",
-      "label": "Basic Page",
-      "description": "Static pages",
-      "features": ["revisions", "menu_ui"],
-      "key_fields": [
-        "body",
-        "field_sections"
-      ]
-    }
-  }
-}
+```toon
+content_types[2]{machine_name,label,description,features,key_fields}:
+  article,Article,News and blog posts,"revisions,menu_ui,content_translation","body,field_image,field_tags,field_category"
+  page,Basic Page,Static pages,"revisions,menu_ui","body,field_sections"
 ```
 
 **Discovery**: See "HOW TO DISCOVER FULL ENTITY STRUCTURE" guide above. Quick commands:
@@ -3952,26 +3929,11 @@ ls config/sync/paragraphs.paragraphs_type.*.yml  # Config files (PRIMARY SOURCE)
 ddev drush field:list paragraph text          # Fields for specific type
 ```
 
-```json
-{
-  "paragraph_types": {
-    "layout_paragraphs": [
-      "banner",
-      "two_column_layout",
-      "accordion"
-    ],
-    "content_paragraphs": [
-      "text_block",
-      "quote",
-      "call_to_action"
-    ],
-    "media_paragraphs": [
-      "image_gallery",
-      "video_embed",
-      "carousel"
-    ]
-  }
-}
+```toon
+paragraph_types:
+  layout_paragraphs[3]: banner,two_column_layout,accordion
+  content_paragraphs[3]: text_block,quote,call_to_action
+  media_paragraphs[3]: image_gallery,video_embed,carousel
 ```
 
 ### Media Types
@@ -3983,29 +3945,11 @@ ls config/sync/media.type.*.yml        # Config files (PRIMARY SOURCE)
 ddev drush field:list media image      # Fields for specific type
 ```
 
-```json
-{
-  "media_types": {
-    "image": {
-      "machine_name": "image",
-      "label": "Image",
-      "source": "image",
-      "source_field": "field_media_image"
-    },
-    "document": {
-      "machine_name": "document",
-      "label": "Document",
-      "source": "file",
-      "source_field": "field_media_document"
-    },
-    "remote_video": {
-      "machine_name": "remote_video",
-      "label": "Remote Video",
-      "source": "oembed:video",
-      "source_field": "field_media_oembed_video"
-    }
-  }
-}
+```toon
+media_types[3]{machine_name,label,source,source_field}:
+  image,Image,image,field_media_image
+  document,Document,file,field_media_document
+  remote_video,Remote Video,oembed:video,field_media_oembed_video
 ```
 
 ### Taxonomy Vocabularies
@@ -4017,23 +3961,10 @@ ls config/sync/taxonomy.vocabulary.*.yml      # Config files (PRIMARY SOURCE)
 ddev drush field:list taxonomy_term tags      # Fields for specific vocabulary
 ```
 
-```json
-{
-  "taxonomies": {
-    "tags": {
-      "machine_name": "tags",
-      "label": "Tags",
-      "description": "Content tagging",
-      "hierarchy": false
-    },
-    "categories": {
-      "machine_name": "categories",
-      "label": "Categories",
-      "description": "Content categorization",
-      "hierarchy": true
-    }
-  }
-}
+```toon
+taxonomies[2]{machine_name,label,description,hierarchy}:
+  tags,Tags,Content tagging,false
+  categories,Categories,Content categorization,true
 ```
 
 ### Custom Entities
@@ -4048,28 +3979,19 @@ ddev drush entity:info                        # List ALL entity types
 ls web/modules/custom/*/src/Entity/*.php      # Find custom entity classes
 ```
 
-```json
-{
-  "custom_entities": {
-    "custom_entity_name": {
-      "type": "content_entity",
-      "base_table": "custom_entity",
-      "entity_keys": {
-        "id": "id",
-        "uuid": "uuid",
-        "label": "name"
-      },
-      "fields": {
-        "id": "integer",
-        "uuid": "uuid",
-        "name": "string",
-        "status": "boolean",
-        "created": "timestamp",
-        "changed": "timestamp"
-      }
-    }
-  }
-}
+```toon
+custom_entities:
+  custom_entity_name:
+    type: content_entity
+    base_table: custom_entity
+    entity_keys: id:id,uuid:uuid,label:name
+    fields[6]{name,type}:
+      id,integer
+      uuid,uuid
+      name,string
+      status,boolean
+      created,timestamp
+      changed,timestamp
 ```
 
 ### Entity Relationships
