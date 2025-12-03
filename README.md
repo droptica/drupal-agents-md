@@ -1,28 +1,18 @@
 # Drupal AGENTS.md Template
 
-**Make AI code 10x better on your Drupal project.**
+[AGENTS.md](https://agents.md) template for Drupal projects. AI reads it once and knows your architecture, standards, and workflows.
 
-Production-ready [AGENTS.md](https://agents.md) template that gives AI coding assistants deep understanding of your Drupal architecture, coding standards, and workflows. Works with Cursor, GitHub Copilot, Claude Code, and 20+ AI tools.
-
-Instead of explaining your project structure every time, AI reads AGENTS.md once and knows:
-- Your Drupal version, modules, entities, and custom code
-- Development workflow, Git strategy, testing approach
-- Code quality standards, security requirements, performance optimization
-- Multilingual setup, SEO configuration, API architecture
-
-**Result:** AI provides accurate, project-specific code from day one.
-
-**Note:** This template assumes DDEV-based development environment.
+**Assumes DDEV-based development.**
 
 ## Quick Start
 
-**Step 1:** Download the template to your project root:
+**1.** Download template:
 
 ```bash
 curl -o AGENTS-TEMPLATE.md https://raw.githubusercontent.com/droptica/drupal-agents-md/main/AGENTS-TEMPLATE.md
 ```
 
-**Step 2:** Copy this prompt to your AI tool (Cursor, Copilot, etc.):
+**2.** Copy this prompt to your AI tool:
 
 ```
 I need you to customize AGENTS-TEMPLATE.md for my Drupal project and save it as AGENTS.md.
@@ -68,15 +58,19 @@ Please:
 - [ ] Document content types and other entities in "Drupal Entities Structure" section
 
 ## Phase 4: Cleanup
-- [ ] Remove commented-out sections if not applicable (multisite)
-- [ ] Remove commented-out sections if not applicable (commerce)
-- [ ] Remove commented-out sections if not applicable (headless)
-- [ ] Remove commented-out sections if not applicable (AI integration)
-- [ ] Remove commented-out sections if not applicable (config split/ignore)
+- [ ] Remove commented-out sections if not applicable (multisite, commerce, headless, AI, config split)
+- [ ] Remove entire sections that don't apply to project (e.g., no SCSS? remove SCSS workflow)
+- [ ] Remove tools/patterns not used in project
 
-## Phase 5: Finalize
+## Phase 5: Propose Additions
+- [ ] List project-specific things found during discovery that are NOT in template
+- [ ] Present as numbered list for user to choose (e.g., "1. Add Solr search section", "2. Add custom queue workers docs")
+- [ ] Wait for user to respond with numbers to add
+- [ ] Add selected items to AGENTS.md
+
+## Phase 6: Finalize
 - [ ] Save as AGENTS.md in project root
-- [ ] Show what was found, replaced/customized, and removed/kept commented
+- [ ] Show summary: found / replaced / removed / added
 - [ ] Delete the temporary `./tmp/agents-md-tasks.md` file
 
 --- CHECKLIST END ---
@@ -88,75 +82,38 @@ Please:
 6. Replace all placeholders from Phase 2
 7. Fill sections from Phase 3
 8. Cleanup from Phase 4
-9. Finalize from Phase 5
+9. **STOP at Phase 5** - show numbered list of proposed additions, wait for my response
+10. Add selected items, then finalize (Phase 6)
 
 After customization, show me:
 - What you found in the project
 - What you replaced/customized
-- Any sections you removed or kept commented
+- What you removed
+- What you added (from proposals)
 ```
 
-**Step 3:** Review the generated AGENTS.md and start coding!
+**3.** Review generated AGENTS.md and start coding!
 
-## What This Template Includes
+## Template Covers
 
-### Development Environment
-- **DDEV Setup** - Container-based development with custom commands
-- **Git Workflow** - Branching strategy, commit standards, code review process
-- **Composer Management** - Dependencies, patches, custom scripts
+- **Environment:** DDEV, Git workflow, Composer
+- **Quality:** PHPStan, PHPCS, PHPUnit, Codeception, Xdebug
+- **Development:** Code standards, entities, modules, forms, database
+- **Modern Drupal:** Headless/API, SEO, multilingual
+- **Frontend:** Themes, SCSS, JS/CSS optimization, caching
+- **Operations:** Config management, security, performance, troubleshooting
 
-### Code Quality & Testing
-- **Code Quality Tools** - PHPStan, PHP CodeSniffer, Rector, Upgrade Status
-- **Testing** - PHPUnit (Unit, Kernel, Functional), Codeception (Acceptance)
-- **Debugging** - Xdebug, logs, performance profiling
+## Manual Customization
 
-### Drupal Development
-- **Code Standards** - SOLID principles, PSR-4, Drupal best practices
-- **Entity System** - Content types, paragraphs, media, taxonomies, custom entities
-- **Module Development** - Structure, patterns, dependency injection
-- **Form API** - Building, validation, submission handlers
-- **Database API** - Queries, migrations, performance
-
-### Modern Drupal Features
-- **Headless/API-First** - JSON:API, GraphQL, OAuth, CORS configuration
-- **SEO & Structured Data** - Schema.org, Open Graph, sitemaps, hreflang
-- **Multilingual** - Translation workflows, language detection, i18n best practices
-
-### Frontend & Theme
-- **Theme Development** - SCSS/Gulp workflow, asset libraries, responsive design
-- **JavaScript & CSS** - Aggregation, dependencies, optimization
-- **Performance** - Caching (Redis, BigPipe), CDN, Core Web Vitals
-
-### Operations
-- **Configuration Management** - Config export/import, Config Split
-- **Security** - Best practices, updates, hardening, monitoring
-- **Performance Monitoring** - Cache management, database optimization
-- **Troubleshooting** - Common issues and solutions
-
-### Documentation
-- **Tasks & Problems Log** - Integrated documentation of changes and issues
-- **Entity Documentation** - JSON-based entity structure reference
-- **Customization Checklist** - Step-by-step template adaptation guide
-
-## Manual Customization (Optional)
-
-If you prefer to customize manually, follow the checklist at the end of AGENTS-TEMPLATE.md.
+Follow checklist at end of AGENTS-TEMPLATE.md.
 
 ## Compatible AI Tools
 
-Cursor • VS Code + Copilot • Claude Code • Codex • Aider • Jules • Gemini CLI • Roo Code • Zed • Devin
-
-See [agents.md](https://agents.md) for full list.
-
-## FAQ / Common Issues
-
-*This section will be updated based on community feedback and common questions.*
-
-*Have a question or issue? [Open an issue](https://github.com/droptica/drupal-agents-md/issues) and we'll add it here.*
+Cursor • Copilot • Claude Code • Codex • Aider • Gemini CLI • Roo Code • Zed • Devin • [more](https://agents.md)
 
 ## Contributing
 
-Found a bug? Have a suggestion? Open an issue or PR!
+Issues and PRs welcome.
 
 ## License
 
