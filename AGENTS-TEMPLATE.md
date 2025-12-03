@@ -527,319 +527,54 @@ Multilingual: hreflang tags, language-specific sitemaps, canonical per language
 
 ## JavaScript and CSS
 
-### JavaScript Aggregation
-
-**Common Issues**:
-- Missing dependencies in `.libraries.yml` files
-- Incorrect loading order causing undefined objects/functions
-- `drupalSettings` not available when needed
-
-**Solutions**:
-- Add proper dependencies: `core/jquery`, `core/drupal`, `core/drupalSettings`, `core/once`
-- Use error checking: `if (typeof $.fn.pluginName === 'function')`
-- Use modern `once()` function instead of jQuery `.once()`
-- Always test with JS aggregation enabled: `admin/config/development/performance`
-
-### CSS Organization
-
-- Follow BEM naming convention (or project-specific convention)
-- Use SCSS/SASS if applicable
-- Organize stylesheets by component/feature
-- Use single directory compontents if applicable
+**JS Aggregation Issues**: Missing `.libraries.yml` dependencies, wrong load order, `drupalSettings` unavailable
+**Solutions**: Add deps (`core/jquery`, `core/drupal`, `core/drupalSettings`, `core/once`), use `once()` not `.once()`, test with aggregation enabled
+**CSS**: BEM naming, SCSS/SASS, organize by component, use SDC when applicable
 
 ## Frontend Development
 
 <!--
-===========================================
-HOW TO DISCOVER THEME STRUCTURE - GUIDE FOR AI/LLM
-===========================================
+THEME DISCOVERY FOR AI/LLM:
+1. cat config/sync/system.theme.yml → active theme
+2. cat web/themes/custom/[theme]/[theme].info.yml → config, base themes
+3. find web/themes/custom/[theme] -name "*.twig" → templates
+4. grep "function.*_preprocess" [theme].theme → preprocess hooks
+5. ls components/ → SDC components
+6. ddev drush sdc:list → list all components
 
-Use this guide to discover the theme structure of a Drupal project.
-Priority order: 1) Config + theme info file, 2) File system exploration, 3) Drush/PHP commands
-
-**Theme File Types Reference:**
-
-| File Type | Location | Purpose |
-|-----------|----------|---------|
-| Theme info | `[theme].info.yml` | Theme definition, regions, libraries |
-| Libraries | `[theme].libraries.yml` | CSS/JS asset definitions |
-| Theme file | `[theme].theme` | Preprocess functions, hooks |
-| Twig templates | `templates/` | HTML templates |
-| Components (SDC) | `components/` | Single Directory Components |
-| Stylesheets | `css/` or `scss/` | Compiled/source styles |
-| JavaScript | `js/` | JavaScript files |
-
-### 1. FIND ACTIVE THEME
-
-```bash
-# Check config for default theme
-cat config/sync/system.theme.yml
-
-# Via Drush
-ddev drush config:get system.theme default
-
-# List all themes
-ddev drush pm:list --type=theme
-
-# Get active theme info via PHP
-ddev drush php:eval "
-\$theme = \Drupal::theme()->getActiveTheme();
-echo 'Name: ' . \$theme->getName() . PHP_EOL;
-echo 'Path: ' . \$theme->getPath() . PHP_EOL;
-echo 'Base themes: ' . implode(', ', array_keys(\$theme->getBaseThemeExtensions())) . PHP_EOL;
-"
-```
-
-### 2. THEME FILE STRUCTURE DISCOVERY
-
-```bash
-# List theme files
-ls -la web/themes/custom/[theme_name]/
-
-# Find all Twig templates
-find web/themes/custom/[theme_name] -name "*.twig" -type f
-
-# Find all SCSS/CSS files
-find web/themes/custom/[theme_name] -name "*.scss" -o -name "*.css" | head -20
-
-# Find all JS files
-find web/themes/custom/[theme_name] -name "*.js" -type f
-
-# Check theme info file
-cat web/themes/custom/[theme_name]/[theme_name].info.yml
-
-# Check libraries definition
-cat web/themes/custom/[theme_name]/[theme_name].libraries.yml
-
-# Check for Single Directory Components
-ls web/themes/custom/[theme_name]/components/
-```
-
-### 3. TWIG TEMPLATE DISCOVERY
-
-```bash
-# Enable Twig debugging (in development.services.yml)
-# Then check HTML source for template suggestions
-
-# Find template source via PHP
-ddev drush php:eval "
-\$theme = \Drupal::theme()->getActiveTheme();
-echo 'Templates path: ' . \$theme->getPath() . '/templates' . PHP_EOL;
-"
-
-# List Twig namespaces
-ddev drush php:eval "
-\$loader = \Drupal::service('twig.loader.filesystem');
-\$namespaces = \$loader->getNamespaces();
-foreach (\$namespaces as \$ns) {
-  echo \$ns . ': ' . implode(', ', \$loader->getPaths(\$ns)) . PHP_EOL;
-}
-"
-```
-
-### 4. PREPROCESS FUNCTIONS
-
-```bash
-# Check theme file for preprocess functions
-grep -n "function.*_preprocess" web/themes/custom/[theme_name]/[theme_name].theme
-
-# Common patterns:
-# [theme_name]_preprocess_node()
-# [theme_name]_preprocess_paragraph()
-# [theme_name]_preprocess_page()
-# [theme_name]_theme_suggestions_*_alter()
-```
-
-### 5. SINGLE DIRECTORY COMPONENTS (SDC)
-
-```bash
-# Check if SDC module is enabled
-ddev drush pm:list | grep sdc
-
-# List components
-ls web/themes/custom/[theme_name]/components/
-
-# Component structure:
-# components/
-#   card/
-#     card.component.yml    # Component definition
-#     card.twig             # Template
-#     card.css              # Styles (optional)
-#     card.js               # Scripts (optional)
-
-# Read component definition
-cat web/themes/custom/[theme_name]/components/[component]/[component].component.yml
-```
-
-### RECOMMENDED WORKFLOW
-
-1. **First**: Check `config/sync/system.theme.yml` for active theme name
-2. **Second**: Read `[theme].info.yml` for theme configuration and base themes
-3. **Third**: Explore `templates/` directory for Twig templates
-4. **Fourth**: Check `[theme].theme` file for preprocess functions
-5. **Fifth**: Check `components/` directory if using SDC
-
+Theme files: [theme].info.yml (definition), [theme].libraries.yml (assets), [theme].theme (hooks), templates/ (Twig), components/ (SDC)
 -->
 
-### Theme Development Setup
-
-**Theme location**: `/web/themes/custom/[theme_name]/` (see [Web Root Directory](#web-root-directory) for path variations)
-
-**Initial Setup**:
-```bash
-# Navigate to theme directory
-cd web/themes/custom/[theme_name]
-
-# Install Node.js dependencies
-npm install
-# or
-yarn install
-```
+**Theme location**: `/web/themes/custom/[theme_name]/`
 
 ### Build Commands
 
 ```bash
-# Development build (non-minified, with source maps)
-npm run dev
-# or
-gulp
-
-# Production build (minified, optimized)
-npm run build
-# or
-gulp dist
-
-# Watch mode (auto-rebuild on file changes)
-npm run watch
-# or
-gulp watch
+cd web/themes/custom/[theme_name]
+npm install                    # Setup
+npm run dev|build|watch        # Dev/prod/watch (or gulp/gulp dist/gulp watch)
+gulp sass|js|images|fonts      # Individual tasks
+gulp lint:scss|lint:js         # Linting
 ```
 
-### Common Frontend Tasks
+### Libraries (`[theme].libraries.yml`)
 
-**Working with SCSS**:
-```bash
-# Compile SCSS to CSS
-gulp sass
-
-# Lint SCSS files
-gulp lint:scss
-
-# Watch SCSS changes
-gulp watch:scss
-```
-
-**Working with JavaScript**:
-```bash
-# Compile/transpile JavaScript
-gulp js
-
-# Lint JavaScript
-gulp lint:js
-
-# Watch JavaScript changes
-gulp watch:js
-```
-
-**Asset Optimization**:
-```bash
-# Optimize images
-gulp images
-
-# Generate icon fonts
-gulp fonts
-
-# Process all assets
-gulp assets
-```
-
-### Development Workflow
-
-1. **Start watch mode**:
-   ```bash
-   cd web/themes/custom/[theme_name]
-   npm run watch
-   ```
-
-2. **Make changes** to SCSS/JS files
-
-3. **View changes** in browser (auto-reload if configured)
-
-4. **Before committing**:
-   ```bash
-   npm run build  # Production build
-   ```
-
-### Theme File Structure
-
-```
-[theme_name]/
-├── package.json           # Node dependencies
-├── gulpfile.js           # Build configuration
-├── webpack.config.js     # Webpack config (if using)
-├── scss/                 # SCSS source files
-│   ├── components/       # Component styles
-│   ├── base/            # Base styles
-│   ├── layout/          # Layout styles
-│   └── style.scss       # Main SCSS file
-├── js/                   # JavaScript source files
-│   └── global.js        # Main JS file
-├── css/                  # Compiled CSS (generated)
-├── templates/            # Twig templates
-├── images/              # Source images
-└── dist/                # Compiled assets (generated)
-```
-
-### Asset Libraries
-
-Define in `[theme_name].libraries.yml`:
 ```yaml
 global:
-  css:
-    theme:
-      css/style.css: {}
-  js:
-    js/global.js: {}
-  dependencies:
-    - core/drupal
-    - core/jquery
+  css: { theme: { css/style.css: {} } }
+  js: { js/global.js: {} }
+  dependencies: [core/drupal, core/jquery, core/drupalSettings, core/once]
 ```
 
-### Adding/Overriding Twig Templates
+### Twig Templates
 
-**Enable Twig debugging** (in `web/sites/default/development.services.yml`):
-```yaml
-parameters:
-  twig.config:
-    debug: true
-    auto_reload: true
-    cache: false
-```
+**Enable debugging** (`development.services.yml`): `twig.config: { debug: true, auto_reload: true, cache: false }`
 
-**Find template suggestions**:
-1. Enable Twig debugging
-2. View page source - look for HTML comments like:
-   ```html
-   <!-- THEME DEBUG -->
-   <!-- THEME HOOK: 'node' -->
-   <!-- FILE NAME SUGGESTIONS:
-      * node--article--full.html.twig
-      * node--article.html.twig
-      * node--1.html.twig
-      * node.html.twig
-   -->
-   ```
-3. Copy original template from `core/themes/` or contrib module
-4. Place in `templates/` directory with appropriate name
-5. Clear cache: `ddev drush cr`
+**Naming**: `node--[type]--[view-mode].html.twig`, `paragraph--[type].html.twig`, `block--[type].html.twig`, `field--[name]--[entity].html.twig`
 
-**Template naming conventions**:
-- **Nodes**: `node--[type]--[view-mode].html.twig`
-- **Paragraphs**: `paragraph--[type].html.twig`
-- **Blocks**: `block--[block-type].html.twig`
-- **Fields**: `field--[field-name]--[entity-type].html.twig`
+**Override**: Enable debug → view source for suggestions → copy from core/themes → place in templates/ → `ddev drush cr`
 
-**Standard template directory structure**:
+**Template directory structure**:
 ```
 templates/
 ├── block/           # Block templates
@@ -853,222 +588,48 @@ templates/
 └── views/           # Views templates
 ```
 
-### Preprocess Functions
-
-Add to `[theme_name].theme` file:
+### Preprocess Functions (`[theme].theme`)
 
 ```php
-<?php
-
-/**
- * Implements hook_preprocess_node().
- */
-function [theme_name]_preprocess_node(&$variables) {
-  $node = $variables['node'];
-
-  // Add custom variables
-  $variables['custom_var'] = 'value';
-
-  // Add classes based on content type
-  if ($node->bundle() == 'article') {
-    $variables['attributes']['class'][] = 'article-content';
-  }
+function [theme]_preprocess_node(&$variables) {
+  $variables['custom_var'] = $variables['node']->bundle();
 }
-
-/**
- * Implements hook_preprocess_paragraph().
- */
-function [theme_name]_preprocess_paragraph(&$variables) {
-  $paragraph = $variables['paragraph'];
-  $variables['paragraph_type'] = $paragraph->bundle();
+function [theme]_preprocess_paragraph(&$variables) {
+  $variables['type'] = $variables['paragraph']->bundle();
 }
-
-/**
- * Implements hook_preprocess_page().
- */
-function [theme_name]_preprocess_page(&$variables) {
-  // Add site-wide variables
-  $variables['site_name'] = \Drupal::config('system.site')->get('name');
-}
-
-/**
- * Implements hook_theme_suggestions_node_alter().
- */
-function [theme_name]_theme_suggestions_node_alter(array &$suggestions, array $variables) {
-  // Add suggestion based on custom field
+function [theme]_theme_suggestions_node_alter(array &$suggestions, array $variables) {
   $node = $variables['elements']['#node'];
   if ($node->hasField('field_layout') && !$node->get('field_layout')->isEmpty()) {
     $suggestions[] = 'node__' . $node->bundle() . '__' . $node->get('field_layout')->value;
-  }
-}
-
-/**
- * Implements hook_form_alter().
- */
-function [theme_name]_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
-  // Customize forms
-  if (strpos($form_id, 'search') !== FALSE) {
-    $form['keys']['#attributes']['placeholder'] = t('Search...');
   }
 }
 ```
 
 ### Single Directory Components (SDC)
 
-**Requirements**: Drupal 10.1+ or SDC contrib module for Drupal 10.0
+Drupal 10.1+ core, or `ddev composer require drupal/sdc` for 10.0
 
-**Enable SDC**:
-```bash
-# Core SDC (Drupal 10.1+)
-ddev drush pm:enable sdc
+**Structure**: `components/[name]/` with `[name].component.yml`, `[name].twig`, optional `.css`/`.js`
 
-# Or contrib for Drupal 10.0
-ddev composer require drupal/sdc
-ddev drush pm:enable sdc
-```
-
-**Create a new component**:
-
-1. Create directory: `web/themes/custom/[theme_name]/components/card/`
-
-2. Create `card.component.yml`:
+**component.yml**:
 ```yaml
 name: Card
-status: stable
-props:
-  type: object
-  properties:
-    title:
-      type: string
-      title: Title
-    description:
-      type: string
-      title: Description
-    image_url:
-      type: string
-      title: Image URL
-    link:
-      type: string
-      title: Link URL
-slots:
-  content:
-    title: Content
+props: { type: object, properties: { title: { type: string }, link: { type: string } } }
+slots: { content: { title: Content } }
 ```
 
-3. Create `card.twig`:
-```twig
-<article class="card">
-  {% if image_url %}
-    <img src="{{ image_url }}" alt="{{ title }}" class="card__image">
-  {% endif %}
-  <div class="card__content">
-    <h3 class="card__title">{{ title }}</h3>
-    {% if description %}
-      <p class="card__description">{{ description }}</p>
-    {% endif %}
-    {{ content }}
-    {% if link %}
-      <a href="{{ link }}" class="card__link">Read more</a>
-    {% endif %}
-  </div>
-</article>
-```
+**Usage**: `{% include '[theme]:card' with { title: node.label, link: url } %}` or `{% embed %}` for slots
 
-4. Create `card.css`:
-```css
-.card {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  overflow: hidden;
-}
-.card__image {
-  width: 100%;
-  height: auto;
-}
-.card__content {
-  padding: 1rem;
-}
-```
+**Commands**: `ddev drush sdc:list`, `ddev drush pm:enable sdc`
 
-**Use component in templates**:
-```twig
-{# Include component #}
-{% include '[theme_name]:card' with {
-  title: node.label,
-  description: content.body|render|striptags|slice(0, 150) ~ '...',
-  image_url: file_url(node.field_image.entity.uri.value),
-  link: path('entity.node.canonical', {'node': node.id})
-} %}
-
-{# Embed with slots #}
-{% embed '[theme_name]:card' with { title: 'My Card' } %}
-  {% block content %}
-    <p>Custom slot content here</p>
-  {% endblock %}
-{% endembed %}
-```
-
-**List available components**:
-```bash
-ddev drush sdc:list
-```
-
-### Theme Hook Suggestions
-
-Add custom template suggestions:
-
-```php
-/**
- * Implements hook_theme_suggestions_page_alter().
- */
-function [theme_name]_theme_suggestions_page_alter(array &$suggestions, array $variables) {
-  // Add suggestion based on node type
-  if ($node = \Drupal::routeMatch()->getParameter('node')) {
-    $suggestions[] = 'page__node__' . $node->bundle();
-  }
-
-  // Add suggestion based on path
-  $current_path = \Drupal::service('path.current')->getPath();
-  $path_alias = \Drupal::service('path_alias.manager')->getAliasByPath($current_path);
-  $path_alias = ltrim($path_alias, '/');
-  $suggestions[] = 'page__' . str_replace('/', '__', $path_alias);
-}
-
-/**
- * Implements hook_theme_suggestions_views_view_alter().
- */
-function [theme_name]_theme_suggestions_views_view_alter(array &$suggestions, array $variables) {
-  $suggestions[] = 'views_view__' . $variables['view']->id();
-  $suggestions[] = 'views_view__' . $variables['view']->id() . '__' . $variables['view']->current_display;
-}
-```
-
-### Troubleshooting Frontend Builds
+### Troubleshooting
 
 ```bash
-# Clear node_modules and reinstall
-rm -rf node_modules package-lock.json
-npm install
-
-# Clear build cache
-rm -rf dist/ css/ js/compiled/
-
-# Check Node/NPM versions
-node -v
-npm -v
-
-# Update dependencies
-npm update
+rm -rf node_modules package-lock.json && npm install   # Reset deps
+rm -rf dist/ css/ js/compiled/                          # Clear build cache
 ```
 
-### Performance Optimization
-
-- Minify CSS and JavaScript for production
-- Use image optimization (imagemin)
-- Implement critical CSS loading
-- Use font-display: swap for web fonts
-- Enable Drupal CSS/JS aggregation
-- Consider using AdvAgg module
+**Performance**: Minify for prod, imagemin, critical CSS, font-display:swap, CSS/JS aggregation, AdvAgg module
 
 ## Environment Indicators
 
@@ -1078,403 +639,120 @@ npm update
 
 ## Documentation
 
-**MANDATORY**: Document all work in the "Tasks and Problems" section below.
-
-- Update **Tasks and Problems** section after every development session
-- Document all significant changes and improvements
-- Record common problems and their solutions
-- **CRITICAL**: Use real system date (run `date` command first)
-- Keep entries concise and actionable
-
-**What to Document**:
-- New modules created or modified
-- Bug fixes and their solutions
-- Configuration changes
-- Performance optimizations
-- Integration implementations
-- Development workflow improvements
-- Common problems encountered
-- Security updates and patches
-
-**When to Update**:
-- After adding new features
-- After fixing bugs
-- After implementing improvements
-- After encountering new problems
-- After finding solutions to existing problems
-- End of each development session
-
-See **Tasks and Problems Log** section at the end of this document.
+**MANDATORY**: Document work in "Tasks and Problems" section. Use real date (`date` command). Document: modules, fixes, config changes, optimizations, problems/solutions.
 
 ## Common Tasks
 
-### Adding New Module
+### New Module
+```bash
+# Create /web/modules/custom/[prefix]_[name]/ with:
+# - [prefix]_[name].info.yml (name, type:module, core_version_requirement:^10||^11, package:Custom)
+# - [prefix]_[name].module (hooks), .routing.yml, .permissions.yml, .services.yml as needed
+ddev drush pm:enable [prefix]_[name] && ddev drush cr
+```
 
-1. Create directory: `/web/modules/custom/[prefix]_[module_name]/`
-2. Create `[prefix]_[module_name].info.yml` with module definition:
-   ```yaml
-   name: 'Module Name'
-   type: module
-   description: 'Module description'
-   core_version_requirement: ^10 || ^11
-   package: Custom
-   ```
-3. Create `[prefix]_[module_name].module` for hooks (if needed)
-4. Add routing, permissions, services as needed
-5. Follow module structure pattern above
-6. Enable module: `ddev drush pm:enable [prefix]_[module_name]`
-7. Clear caches: `ddev drush cr`
+### Update Core
+```bash
+ddev export-db --file=backup.sql.gz                                    # Backup
+ddev composer update drupal/core-recommended drupal/core-composer-scaffold --with-dependencies
+ddev drush updb && ddev drush cr                                       # Updates + cache
+```
 
-### Updating Drupal Core
+### Database Migration
+```php
+// In [module].install
+function [module]_update_10001() {
+  // Use EntityDefinitionUpdateManager for field changes
+  // Check field exists, update displays, log completion
+  drupal_flush_all_caches();
+}
+```
 
-1. Check module compatibility: `ddev composer outdated 'drupal/*'`
-2. Backup database: `ddev export-db --file=backup-pre-update.sql.gz`
-3. Update core:
-   ```bash
-   ddev composer update drupal/core-recommended --with-dependencies
-   ddev composer update drupal/core-composer-scaffold --with-dependencies
-   ```
-4. Run database updates: `ddev drush updb`
-5. Clear caches: `ddev drush cr`
-6. Test thoroughly and check logs
-7. Document in Tasks and Problems section
+### Tests
+```bash
+ddev exec vendor/bin/phpunit web/modules/custom/[module]/tests   # PHPUnit
+ddev exec vendor/bin/codecept run                                 # Codeception
+# Dirs: tests/src/Unit/, Kernel/, Functional/; tests/acceptance/
+```
 
-### Creating Database Migration
+### Permissions
+```bash
+ddev drush role:perm:list [role]                                  # List
+# PHP: user_role_grant_permissions($role_id, ['perm1']); drupal_flush_all_caches();
+```
 
-1. Add update hook to module `.install` file:
-   ```php
-   function [module_name]_update_10001() {
-     // Update logic here
-   }
-   ```
-2. Use `EntityDefinitionUpdateManager` for field changes
-3. Check if field exists before updating
-4. Update form/view displays if needed
-5. Clear caches and log completion:
-   ```php
-   drupal_flush_all_caches();
-   \Drupal::logger('module_name')->info('Migration completed.');
-   ```
-6. Test backward compatibility
-7. Test on staging before production
-
-### Adding Tests
-
-1. Determine test type (unit, functional, integration, acceptance)
-2. Create test file in appropriate directory:
-   - Unit: `tests/src/Unit/`
-   - Kernel: `tests/src/Kernel/`
-   - Functional: `tests/src/Functional/`
-   - Acceptance: `tests/acceptance/`
-3. Follow naming convention: `*Test.php` for PHPUnit, `*Cest.php` for Codeception
-4. Write test following best practices
-5. Run tests to verify: `ddev exec vendor/bin/phpunit [test-file]`
-6. Add to CI/CD pipeline
-
-### Running Tests
-
-1. PHPUnit tests:
-   ```bash
-   ddev exec vendor/bin/phpunit web/modules/custom/[module]/tests
-   ```
-2. Codeception tests:
-   ```bash
-   ddev exec vendor/bin/codecept run
-   ```
-3. Check results in `tests/_output/`
-
-### Debugging Issues
-
-1. Enable Xdebug: `ddev xdebug on`
-2. Set breakpoints in IDE
-3. Run code/request
-4. Step through code
-5. Disable when done: `ddev xdebug off`
-
-See **Debugging** section for more detailed debugging commands.
-
-### Managing Permissions
-
-1. Grant permissions to role:
-   ```php
-   user_role_grant_permissions($role_id, ['permission1', 'permission2']);
-   drupal_flush_all_caches();
-   ```
-2. Via UI: `/admin/people/permissions`
-3. Check current permissions: `ddev drush role:perm:list [role_name]`
-
-### Exporting Configuration
-
-1. Make configuration changes in UI
-2. Export: `ddev drush cex`
-3. Review changes: `git diff config/`
-4. Commit exported configuration
-5. On other environments: `ddev drush cim`
+### Config Export/Import
+```bash
+ddev drush cex && git diff config/ && git commit                  # Export
+ddev drush cim -y                                                 # Import
+```
 
 ## Troubleshooting
 
-### JavaScript Errors with Aggregation
-
-**Problem**: JavaScript works in development but breaks with aggregation enabled.
-
-**Diagnosis**:
-1. Check `.libraries.yml` for missing dependencies
-2. Verify loading order in Network tab (browser DevTools)
-3. Check browser console for errors
-4. Enable aggregation: `/admin/config/development/performance`
-
-**Solutions**:
-```yaml
-# Fix: Add proper dependencies in [module].libraries.yml
-my_library:
-  js:
-    js/script.js: {}
-  dependencies:
-    - core/drupal
-    - core/jquery
-    - core/drupalSettings
-    - core/once
-```
-
-```javascript
-// Fix: Add safety checks in JavaScript
-(function (Drupal, once) {
-  'use strict';
-
-  Drupal.behaviors.myBehavior = {
-    attach: function (context, settings) {
-      // Check if dependencies exist
-      if (typeof once === 'undefined' || typeof settings.myModule === 'undefined') {
-        return;
-      }
-
-      // Safe to use
-      once('my-behavior', '.my-selector', context).forEach(function (element) {
-        // Your code
-      });
-    }
-  };
-})(Drupal, once);
-```
-
-### Drush Issues
-
-**Problem**: Drush commands fail or produce unexpected results.
-
-**Common Causes & Solutions**:
-
-1. **Drush version incompatibility**:
-   ```bash
-   # Check Drush version
-   ddev drush --version
-
-   # Update Drush
-   ddev composer update drush/drush
-   ```
-
-2. **Memory exhaustion**:
-   ```bash
-   # Increase PHP memory limit temporarily
-   ddev exec php -d memory_limit=512M vendor/bin/drush [command]
-   ```
-
-3. **Permission issues**:
-   ```bash
-   # Fix file permissions
-   ddev exec chmod -R 755 web/sites/default/files
-   ddev exec chmod 444 web/sites/default/settings.php
-   ```
-
-4. **Bootstrap errors**:
-   ```bash
-   # Clear caches
-   ddev drush cr
-
-   # Rebuild registry
-   ddev drush php:eval "\$kernel = \Drupal::service('kernel'); \$kernel->invalidateContainer();"
-   ```
-
-### Cache Issues
-
-**Problem**: Changes not appearing or stale content showing.
-
-**Solutions**:
+### Quick Fixes
 ```bash
-# Clear all caches
-ddev drush cr
+ddev drush cr                                                     # Clear cache
+ddev restart                                                      # Restart containers
+ddev xdebug on|off                                               # Debug mode
+ddev drush watchdog:show --count=50                              # Check logs
+```
 
-# Clear specific cache bin
-ddev drush cache:clear render
-ddev drush cache:clear dynamic_page_cache
+### JS Aggregation Issues
+Add deps in `.libraries.yml`: `core/drupal`, `core/jquery`, `core/drupalSettings`, `core/once`
+Use `once()` function, check browser console, test with aggregation enabled
 
-# Clear Twig cache and rebuild
-ddev drush twig:debug
-rm -rf web/sites/default/files/php/twig/*
-
-# Disable caches for development (development.services.yml)
-# Then: ddev drush cr
-
-# Nuclear option: Clear everything
-ddev drush sql:query "TRUNCATE cache_bootstrap; TRUNCATE cache_config; TRUNCATE cache_container; TRUNCATE cache_data; TRUNCATE cache_default; TRUNCATE cache_discovery; TRUNCATE cache_dynamic_page_cache; TRUNCATE cache_entity; TRUNCATE cache_menu; TRUNCATE cache_render;"
-ddev drush cr
+### Cache Not Clearing
+```bash
+ddev drush cr                                                     # Standard
+rm -rf web/sites/default/files/php/twig/* && ddev drush cr       # Twig
+ddev drush sql:query "TRUNCATE cache_render;" && ddev drush cr   # Nuclear
 ```
 
 ### Database Issues
-
-**Problem**: Database corruption, pending updates, or connection errors.
-
-**Solutions**:
 ```bash
-# Check database connection
-ddev drush sql:cli
-# Type: SELECT 1; (should return 1)
-
-# Run pending updates
-ddev drush updatedb
-# Alias: ddev drush updb
-
-# Rebuild entity schema
-ddev drush entity:updates
-
-# Repair tables
-ddev mysql -e "REPAIR TABLE [table_name];"
-
-# Check for crashed tables
-ddev mysql -e "CHECK TABLE [table_name];"
-
-# Reset to known good state
-ddev db-restore  # If you have backup
+ddev drush sql:cli                     # Check connection (SELECT 1;)
+ddev drush updb && ddev drush entity:updates   # Pending updates
+ddev mysql -e "REPAIR TABLE [name];"   # Repair table
 ```
 
-### DDEV Container Issues
-
-**Problem**: Containers won't start or behave unexpectedly.
-
-**Solutions**:
+### DDEV Issues
 ```bash
-# Restart DDEV
-ddev restart
-
-# Stop and start (full restart)
-ddev stop
-ddev start
-
-# Remove and recreate containers
-ddev delete -O
-ddev start
-
-# Check Docker resources
-docker ps
-docker stats
-
-# View DDEV logs
-ddev logs
-
-# Check for port conflicts
-ddev describe
+ddev restart                           # Soft restart
+ddev stop && ddev start                # Full restart
+ddev delete -O && ddev start           # Recreate containers
+ddev logs                              # View logs
 ```
 
-### Module Installation Issues
-
-**Problem**: Module won't install or enable.
-
-**Solutions**:
+### Module Installation
 ```bash
-# Check module dependencies
-ddev composer why-not drupal/[module_name]
-
-# Install with dependencies
-ddev composer require drupal/[module_name]
-
-# Enable module
-ddev drush pm:enable [module_name]
-
-# Check for conflicts
-ddev drush pm:list | grep [module_name]
-
-# If schema issues
-ddev drush updatedb
-ddev drush entity:updates
+ddev composer why-not drupal/[module]  # Check deps
+ddev composer require drupal/[module] && ddev drush pm:enable [module]
+ddev drush updb && ddev drush entity:updates   # Schema issues
 ```
 
-### Permission Denied Errors
-
-**Problem**: Cannot write files or access directories.
-
-**Solutions**:
+### Permissions
 ```bash
-# Fix files directory permissions
 ddev exec chmod -R 775 web/sites/default/files
-ddev exec chown -R $(id -u):$(id -g) web/sites/default/files
-
-# Make settings.php writable temporarily
-ddev exec chmod 644 web/sites/default/settings.php
-# After changes:
 ddev exec chmod 444 web/sites/default/settings.php
-
-# Fix Twig cache permissions
-ddev exec chmod -R 775 web/sites/default/files/php
 ```
 
-### White Screen of Death (WSOD)
-
-**Problem**: Blank white page with no error message.
-
-**Solutions**:
+### WSOD (White Screen)
 ```bash
-# Enable error reporting temporarily
 ddev drush config:set system.logging error_level verbose
-
-# Check PHP error log
-ddev logs
-
-# Check watchdog
-ddev drush watchdog:show --count=50
-
-# Check for fatal errors
-ddev exec tail -f /var/log/php/php-fpm.log
-
-# Disable recently enabled modules
-ddev drush pm:uninstall [module_name]
+ddev logs && ddev drush watchdog:show --count=50
+ddev exec tail -f /var/log/php/php-fpm.log    # Check fatal errors
 ```
 
-### Configuration Import Failures
-
-**Problem**: `ddev drush cim` fails with errors.
-
-**Solutions**:
+### Config Import Fails
 ```bash
-# Check what would be imported
-ddev drush config:status
-
-# Import with override
-ddev drush cim -y
-
-# Import specific configuration
-ddev drush config:import --partial --source=/path/to/config
-
-# If UUID mismatch
-ddev drush config:set system.site uuid [correct-uuid]
-
-# Skip validation (use with caution)
-ddev drush cim --skip-modules
+ddev drush config:status              # Check status
+ddev drush config:set system.site uuid [correct-uuid]  # UUID mismatch
 ```
 
-### Memory Limit Issues
-
-**Problem**: PHP memory exhausted errors.
-
-**Solutions**:
+### Memory Issues
 ```bash
-# Check current limit
-ddev exec php -i | grep memory_limit
-
-# Increase in .ddev/php/php.ini
-echo "memory_limit = 512M" >> .ddev/php/php.ini
-ddev restart
-
-# Or for single command
-ddev exec php -d memory_limit=1G vendor/bin/drush [command]
+echo "memory_limit = 512M" >> .ddev/php/php.ini && ddev restart
+# Or: ddev exec php -d memory_limit=1G vendor/bin/drush [cmd]
 ```
 
 ## Additional Resources
