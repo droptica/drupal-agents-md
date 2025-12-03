@@ -103,11 +103,28 @@ ddev start && ddev [BUILD_COMMAND]
 Location: `.ddev/commands/host/[name]`
 **WARNING**: Don't use `## #ddev-generated` comments - they break command recognition.
 
-### Key Drush Commands
+### Drush Commands
+
 ```bash
-ddev drush status|cr|cex|cim|updb    # Status, cache, config, updates
-ddev drush sql:query "SELECT..."     # DB query
-ddev drush php:eval "code"           # PHP eval
+# Core commands
+ddev drush status                    # Status check
+ddev drush cr                        # Cache rebuild
+ddev drush cex                       # Config export
+ddev drush cim                       # Config import
+ddev drush updb                      # Database updates
+
+# Database & PHP eval
+ddev drush sql:query "SELECT * FROM node_field_data LIMIT 5;"
+ddev drush php:eval "echo 'Hello World';"
+
+# Test services and entities
+ddev drush php:eval "var_dump(\Drupal::hasService('entity_type.manager'));"
+ddev drush php:eval "\$node = \Drupal::entityTypeManager()->getStorage('node')->load(1); var_dump(\$node->getTitle());"
+ddev drush php:eval "var_dump(\Drupal::config('system.site')->get('name'));"
+ddev drush php:eval "var_dump(\Drupal::service('custom_module.service_name'));"
+
+# Quick setup (pull from platform)
+ddev pull platform -y && ddev drush cim -y && ddev drush cr && ddev drush uli
 ```
 
 <!-- MULTISITE: Use `ddev drush -l [site.ddev.site] [cmd]` -->
@@ -136,140 +153,25 @@ Always include issue numbers in descriptions. Monitor upstream for merged patche
 
 ## Code Quality Tools
 
-Maintain code quality by running these tools regularly during development.
-
-### PHPStan Static Analysis
-
-**Purpose**: Catch bugs and type errors before runtime
-
 ```bash
-# If custom DDEV command exists
-ddev phpstan
-
-# Manual execution
+# PHPStan - static analysis
 ddev exec vendor/bin/phpstan analyze web/modules/custom --level=1
 
-# Analyze specific module
-ddev exec vendor/bin/phpstan analyze web/modules/custom/[module_name]
-
-# Higher analysis level (stricter)
-ddev exec vendor/bin/phpstan analyze web/modules/custom --level=5
-```
-
-**When to run**:
-- Before committing code
-- After adding new methods or classes
-- When refactoring existing code
-- During code review
-
-### PHP CodeSniffer (Drupal Standards)
-
-**Purpose**: Enforce Drupal coding standards
-
-```bash
-# Check coding standards
+# PHPCS - coding standards check
 ddev exec vendor/bin/phpcs --standard=Drupal web/modules/custom/
 
-# Check specific module
-ddev exec vendor/bin/phpcs --standard=Drupal web/modules/custom/[module_name]
-
-# Check with detailed report
-ddev exec vendor/bin/phpcs --standard=Drupal --report=full web/modules/custom/
-```
-
-**When to run**:
-- Before committing code
-- After writing new code
-- Before creating pull requests
-
-### PHP Code Beautifier and Fixer
-
-**Purpose**: Automatically fix coding standard violations
-
-```bash
-# Auto-fix coding standards
+# PHPCBF - auto-fix coding standards
 ddev exec vendor/bin/phpcbf --standard=Drupal web/modules/custom/
 
-# Fix specific module
-ddev exec vendor/bin/phpcbf --standard=Drupal web/modules/custom/[module_name]
-```
+# Rector - code modernization (run in container)
+ddev ssh && vendor/bin/rector process web/modules/custom --dry-run
 
-**When to run**:
-- After PHPSniffer identifies fixable issues
-- Before final commit
-- To quickly format new code
-
-### Rector Code Modernization
-
-**Purpose**: Automatically upgrade code to newer PHP/Drupal versions
-
-```bash
-# Dry run (preview changes)
-ddev ssh
-vendor/bin/rector process web/modules/custom/module_name --dry-run
-
-# Apply changes
-vendor/bin/rector process web/modules/custom/module_name
-
-# Process entire custom modules directory
-vendor/bin/rector process web/modules/custom
-```
-
-**When to run**:
-- When upgrading PHP version
-- When upgrading Drupal major version
-- To modernize legacy code
-- Always test thoroughly after applying changes
-
-### Upgrade Status Module
-
-**Purpose**: Check Drupal 10/11 compatibility and identify deprecated code
-
-```bash
-# Install Upgrade Status module
-ddev composer require drupal/upgrade_status
-ddev drush pm:enable upgrade_status
-
-# Check compatibility via UI
-# Visit: /admin/reports/upgrade-status
-
-# Check specific project via Drush
-ddev drush upgrade_status:analyze [project_name]
-
-# Check all custom modules
+# Upgrade Status - Drupal compatibility check
 ddev drush upgrade_status:analyze --all
-
-# Export report
-ddev drush upgrade_status:analyze --all --format=json > upgrade-status.json
 ```
 
-**What it checks**:
-- Deprecated code usage
-- Drupal 10/11 compatibility issues
-- PHP version compatibility
-- Contrib module compatibility
-- Custom code issues
-
-**Use with Rector**:
-1. Run Upgrade Status to identify issues
-2. Use Rector to automatically fix many deprecations
-3. Manually fix remaining issues
-4. Re-run Upgrade Status to verify
-
-**When to run**:
-- Before upgrading Drupal major version
-- Quarterly maintenance check
-- After adding new contrib modules
-- During code review process
-
-### Configuration Files
-
-- **PHPStan**: `phpstan.neon` or `phpstan.neon.dist`
-- **PHP CodeSniffer**: `phpcs.xml` or `phpcs.xml.dist`
-- **Rector**: `rector.php`
-- **Upgrade Status**: Web UI at `/admin/reports/upgrade-status`
-
-Customize these files based on project needs.
+**Config files**: `phpstan.neon`, `phpcs.xml`, `rector.php`
+**Run before**: commits, PRs, Drupal upgrades
 
 ## Testing
 
