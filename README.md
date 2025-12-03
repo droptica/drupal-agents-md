@@ -69,7 +69,7 @@ Please:
 - [ ] List project-specific things found during discovery that are NOT in template
 - [ ] Present as numbered list for user to choose (e.g., "1. Add Solr search section", "2. Add custom queue workers docs")
 - [ ] Wait for user to respond with numbers to add
-- [ ] Add selected items to AGENTS.md
+- [ ] Add selected items to AGENTS.md - keep additions minimal (save tokens) but preserve all key info
 
 ## Phase 6: Finalize
 - [ ] Show summary: found / replaced / removed / added
