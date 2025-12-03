@@ -22,72 +22,36 @@ AI coding guide for [PROJECT_NAME] Drupal project.
 
 ## Project Overview
 
-- **Platform**: Drupal [VERSION] [single site | multisite installation]
-- **Context**: [Brief project description]
+- **Platform**: Drupal [VERSION] [single site | multisite]
+- **Context**: [Brief description]
 - **Architecture**: [Architecture description]
-- **Security**: [Security requirements level]
-- **Languages**: [single language | multilingual - list languages]
+- **Security**: [Security level]
+- **Languages**: [single | multilingual: list languages]
+- **Custom Entities**: [List if any]
+- **Role System**: [Describe roles]
+- **Use Cases**: [Main use cases]
 
-### Project Architecture
-
-- **Custom Drupal Entities**: [List custom entities if any]
-- **Role System**: [Describe role system]
-- **Typical Use Cases**: [List main use cases]
-
-<!--
-===========================================
-MULTISITE CONFIGURATION (uncomment if applicable)
-===========================================
-
+<!-- MULTISITE (uncomment if applicable)
 ### Multi-site Setup
-
-This project manages multiple sites:
-- **[site1.domain]** - [Description and purpose]
-- **[site2.domain]** - [Description and purpose]
-- **[site3.domain]** - [Description and purpose]
-
-**Site-specific databases**: Each site uses a separate database
-**Shared codebase**: All sites share the same Drupal codebase
-**Configuration**: Site-specific config in `/config/[site.domain]/`
+Sites: [site1.domain], [site2.domain], [site3.domain]
+- Separate databases per site
+- Shared codebase
+- Config in `/config/[site.domain]/`
 -->
 
-<!--
-===========================================
-AI INTEGRATION (uncomment if applicable)
-===========================================
-
+<!-- AI INTEGRATION (uncomment if applicable)
 ### AI Integration
-
-**AI Provider**: [OpenAI | Other AI service]
-**Use Cases**:
-- [Content generation]
-- [Translation automation]
-- [Content summarization]
-- [Other AI features]
-
-**API Key Management**: Stored in environment variables (`.ddev/.env`)
-**Modules**: [List AI-related custom modules]
+Provider: [OpenAI | Other] | Modules: [List modules]
+Uses: content generation, translation, summarization
+API keys in `.ddev/.env`
 -->
 
-<!--
-===========================================
-COMMERCE/PAYMENT (uncomment if applicable)
-===========================================
-
-### E-commerce Integration
-
-**Commerce Platform**: Drupal Commerce [VERSION]
-**Payment Gateways**: [List payment providers - e.g., Stripe, PayPal, TPay]
-**Custom Commerce Modules**: [List custom modules]
-
-**Key Features**:
-- [Product catalog]
-- [Shopping cart]
-- [Checkout process]
-- [Order management]
-- [Payment processing]
-
-**API Keys**: Payment gateway credentials stored in environment variables
+<!-- COMMERCE (uncomment if applicable)
+### E-commerce
+Platform: Drupal Commerce [VERSION]
+Gateways: [Stripe, PayPal, TPay]
+Features: catalog, cart, checkout, orders, payments
+API keys in environment variables
 -->
 
 ## Date Verification Rule
