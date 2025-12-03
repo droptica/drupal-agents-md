@@ -365,331 +365,66 @@ user_role_revoke_permissions($role_id, ['permission']);
 
 ## Directory Structure
 
-### Key Directories
+**Key paths**: `/web/` (or `docroot/`), `/web/modules/custom/`, `/config/sync/`, `/web/sites/default/settings.php`, `/patches/`, `/tests/`
 
-- **Web Root**: `/web/` (or `/docroot/`, `/html/` - see "Web Root Directory" section)
-- **Custom Modules**: `/web/modules/custom/`
-- **Configuration**: `/config/sync/` (or `/config/[site.domain]/` for multisite)
-- **Settings**: `/web/sites/default/settings.php`
-- **Patches**: `/patches/` organized by core/contrib
-- **Tests**: `/tests/`
-- **Build Scripts**: `/build/` or `/scripts/`
-- **Tools**: `/tools/`
-
-### Finding Functionality
-
-- **[Feature 1]**: `/web/modules/custom/[module]/`
-- **[Feature 2]**: `/web/modules/custom/[module]/`
-- **Site configuration**: `/config/sync/`
-- **Custom theme**: `/web/themes/custom/[theme_name]/`
-- **Testing**: `/tests/`
-
-### Common Development Paths
-
-- **Adding routes**: Module `routing.yml` files
-- **Creating forms**: Module `src/Form/` directories
-- **Entity definitions**: Module `src/Entity/` directories
-- **Custom permissions**: Module `permissions.yml` files
-- **Database updates**: Module `.install` files
+**Development paths**: routes → `routing.yml`, forms → `src/Form/`, entities → `src/Entity/`, permissions → `permissions.yml`, updates → `.install`
 
 ## Multilingual Configuration
 
-Quick reference for multilingual Drupal setup. For comprehensive guide, see [Drupal Multilingual Documentation](https://www.drupal.org/docs/multilingual-guide).
-
-### Quick Start
-
-**Enable Core Modules**:
 ```bash
+# Setup
 ddev drush pm:enable language locale content_translation config_translation
-ddev drush cr
-```
+ddev drush language:add pl && ddev drush language:add es
+ddev drush locale:check && ddev drush locale:update
 
-**Add Languages**:
-```bash
-ddev drush language:add pl
-ddev drush language:add es
-# Or via UI: /admin/config/regional/language/add
-```
-
-**Check Current Setup**:
-```bash
-ddev drush language:list
-ddev drush config:get system.site default_langcode
-ddev drush config:get language.content_settings.node.*
-```
-
-### Language Detection
-
-**Configure at**: `/admin/config/regional/language/detection`
-
-**Recommended Order**:
-1. **URL** - Use path prefix (`/en/`, `/pl/`) for SEO benefits
-2. User preference
-3. Session
-4. Browser detection
-
-**URL Prefix Configuration**:
-```bash
-# English: example.com/en/page
-# Polish: example.com/pl/page
-```
-
-### Enable Content Translation
-
-**Content Types**:
-```bash
-# Via Drush
+# Enable content translation
 ddev drush config:set language.content_settings.node.article third_party_settings.content_translation.enabled true
-
-# Via UI: Structure > Content types > [Type] > Edit > Language settings
 ```
 
-**Custom Entities**:
-```php
-/**
- * @ContentEntityType(
- *   translatable = TRUE,
- * )
- */
-$fields['name'] = BaseFieldDefinition::create('string')
-  ->setTranslatable(TRUE);
-```
+**Detection**: Configure at `/admin/config/regional/language/detection` - use URL prefix (`/en/`, `/pl/`) for SEO
 
-### Translation Workflows
+**Custom entities**: Add `translatable = TRUE` to `@ContentEntityType`, use `->setTranslatable(TRUE)` on fields
 
-**Manual Translation**:
-1. Create content in default language
-2. Edit content > Translate tab
-3. Add translation for each language
+**In code**: `$this->t('Hello @name', ['@name' => $name])` | **In Twig**: `{{ 'Hello'|trans }}`
 
-**TMGMT Module** (bulk translation):
-```bash
-ddev composer require drupal/tmgmt
-ddev drush pm:enable tmgmt tmgmt_content
-# Configure at /admin/tmgmt
-```
-
-### Interface Translation
-
-```bash
-# Update translations
-ddev drush locale:check
-ddev drush locale:update
-
-# Translate custom strings at /admin/config/regional/translate
-```
-
-### Language Switcher
-
-**Enable Block**: Structure > Block layout > Place "Language switcher" block
-
-**Custom Switcher**:
-```php
-function custom_language_switcher() {
-  $languages = \Drupal::languageManager()->getLanguages();
-  $links = [];
-  foreach ($languages as $lang) {
-    $links[$lang->getId()] = [
-      'title' => $lang->getName(),
-      'url' => \Drupal::url('<current>', [], ['language' => $lang]),
-    ];
-  }
-  return ['#theme' => 'links', '#links' => $links];
-}
-```
-
-### Best Practices
-
-- ✅ Use URL prefix for SEO (`/en/`, `/pl/`)
-- ✅ Enable translation for all content types, taxonomies, menus
-- ✅ Implement hreflang tags (see SEO section)
-- ✅ Use `t()` and `TranslatableMarkup` for all strings
-- ✅ Test with `drush locale:check` regularly
-- ✅ Enable language cache contexts
-
-### Common Issues
-
-**Missing translations**: `ddev drush locale:update`
-**Content not translatable**: Check Language settings tab on content type
-**Switcher not working**: Verify URL-based detection is enabled
-**Fields not translatable**: Edit field > Enable translation
-
-### Quick Reference
-
-```php
-// In code
-$this->t('Hello @name', ['@name' => $name]);
-new TranslatableMarkup('Welcome!');
-
-// In Twig
-{{ 'Hello World'|trans }}
-{{ 'Hello @name'|trans({'@name': name}) }}
-```
-
-**Document your project languages in Project Overview section above.**
+**Common issues**: Missing translations → `locale:update`, content not translatable → check Language settings tab
 
 ## Configuration Management
 
-### Config Export/Import
-
 ```bash
-# Export configuration
-ddev drush cex
-
-# Import configuration
-ddev drush cim
-
-# Show config differences
-ddev drush config:status
+ddev drush cex                    # Export config
+ddev drush cim                    # Import config
+ddev drush config:status          # Show differences
 ```
 
-### Config Split (environment-specific configuration)
-
-<!--
-Uncomment this section if using config_split module
+<!-- CONFIG SPLIT (uncomment if using)
+Structure: config/{sync,dev,staging,prod}/
+Commands: `ddev drush config-split:export dev`, `ddev drush csex dev`
+Use cases: dev modules (devel), prod modules (purge, cdn), env-specific settings
 -->
 
-<!--
-The project uses `config_split` module to manage environment-specific configuration.
-
-**Config Split Structure**:
-```
-config/
-├── sync/              # Shared configuration (all environments)
-├── dev/               # Development-only configuration
-├── staging/           # Staging-specific configuration
-└── prod/              # Production-specific configuration
-```
-
-**Enable/Disable Config Splits**:
-```bash
-# Enable development split
-ddev drush config-split:export dev
-
-# Activate specific split
-ddev drush csex dev
-
-# Deactivate split
-ddev drush config-split:deactivate dev
-```
-
-**Common Use Cases**:
-- **Development split**: Development modules (devel, webprofiler, stage_file_proxy)
-- **Production split**: Production-only modules (purge, cdn, shield)
-- **Environment-specific settings**: Different API endpoints, debug settings
-
-**Configuration**:
-- Create config split at: `/admin/config/development/configuration/config-split`
-- Add modules to blacklist (exclude from main config)
-- Or add modules to graylist (override in split)
-- Export configuration: `ddev drush cex`
--->
-
-### Config Ignore (if using config_ignore module)
-
-<!--
-The project uses the `config_ignore` module to exclude certain configuration entities from being exported/imported. This is important for configurations that are site-specific or managed manually.
-
-**Config Ignore Settings**:
-- Location: `/config/sync/config_ignore.settings.yml`
-- Common ignored patterns:
-  - [List patterns specific to your project]
+<!-- CONFIG IGNORE (uncomment if using)
+Location: /config/sync/config_ignore.settings.yml
 -->
 
 ## Security
 
-### Security Best Practices
-
-- Follow Drupal's security best practices
-- Implement proper access control and permission checks
-- Use Drupal's security features for form validation and CSRF protection
-- HTTPS redirect must remain present
-- Sanitize all user input
-- Use Drupal's database abstraction layer to prevent SQL injection
-- Never store sensitive data in configuration
-- Use environment variables for API keys and secrets
-
-### Security Update Commands
+**Principles**: HTTPS required, sanitize input, use DB abstraction (no raw SQL), env vars for secrets, proper access checks
 
 ```bash
-# Check for security updates
+# Security updates
 ddev drush pm:security
-
-# Check for available updates
-ddev drush pm:security-php
-
-# Update Drupal core (security updates)
 ddev composer update drupal/core-recommended --with-dependencies
-
-# Update all modules (security only)
 ddev composer update --security-only
 
-# Update specific module with dependencies
-ddev composer update drupal/[module_name] --with-dependencies
-
-# After updates, run database updates
-ddev drush updatedb
-
-# Clear caches
-ddev drush cr
-```
-
-### Security Audit
-
-```bash
-# Review enabled modules
-ddev drush pm:list --status=enabled
-
-# Check user permissions
-ddev drush role:list
-
-# View user roles and permissions
+# Audit
 ddev drush role:perm:list
-
-# Review users with admin access
-ddev drush user:information --uid=1
-
-# Check file permissions
-ddev exec ls -la web/sites/default/
-
-# Review security-related configuration
-ddev drush config:get system.site page.403
-ddev drush config:get system.site page.404
-```
-
-### Security Hardening
-
-**File Permissions**:
-- Settings files should be read-only: `chmod 444 settings.php`
-- Files directory should not be executable: `chmod 755 sites/default/files`
-- Never make web root writable by web server
-
-**Configuration**:
-- Disable PHP execution in files directory
-- Configure .htaccess properly
-- Enable security headers
-- Use strong session settings
-- Implement rate limiting for forms
-
-**Code Security**:
-- Always use parameter placeholders in database queries
-- Escape output: Use `\Drupal\Component\Utility\Html::escape()`
-- Validate input: Use Form API validation
-- Check permissions: Use `$account->hasPermission()`
-- Sanitize URLs: Use `\Drupal\Core\Url::fromUri()`
-
-### Security Monitoring
-
-```bash
-# Review watchdog for security events
 ddev drush watchdog:show --severity=Error --count=100
-
-# Check failed login attempts
-ddev drush sql:query "SELECT * FROM watchdog WHERE type='user' AND message LIKE '%Failed login%' ORDER BY wid DESC LIMIT 20;"
-
-# Review access logs (if available)
-ddev exec tail -n 100 /var/log/nginx/access.log
 ```
+
+**Hardening**: `chmod 444 settings.php`, `chmod 755 sites/default/files`, disable PHP in files dir
+
+**Code**: Use placeholders in queries, `Html::escape()` for output, `$account->hasPermission()` for access, Form API for validation
 
 ## Headless/API-First Development
 
