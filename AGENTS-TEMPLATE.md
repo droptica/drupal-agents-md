@@ -1,29 +1,24 @@
 # AGENTS.md
 
-A guide for AI coding agents working on the [PROJECT_NAME] project.
+AI coding guide for [PROJECT_NAME] Drupal project.
 
 ## AI Response Requirements
 
-When working with this project, follow these communication guidelines:
+**Communication style:**
+- Code over explanations - provide implementations, not descriptions
+- Be direct, skip preambles
+- Assume Drupal expertise - no over-explaining basics
+- Suggest better approaches with code
+- Show only changed code sections with minimal context
+- Complete answers in one response when possible
+- Use Drupal APIs, not generic PHP
+- Ask if requirements are ambiguous
 
-- **Give me code, not high-level explanations** - Provide actual implementations, not conceptual descriptions
-- **Be direct and concise** - Skip unnecessary preambles and get to the solution
-- **Treat me as a Drupal expert** - Provide complete implementations without over-explaining basics
-- **Suggest better approaches** - If you see a better way, propose it with code
-- **Show only relevant code** - Don't repeat entire files, just the changed sections with minimal context
-- **Split responses only when necessary** - Complete the answer in one response if possible
-- **Focus on Drupal-specific solutions** - Use Drupal APIs and patterns, not generic PHP
-- **Implement best practices directly** - Don't lecture about them, just use them in code
-- **Ask clarifying questions** - If requirements are ambiguous, ask before implementing
-
-### Response Format
-
-- Use clear, concise language
-- Code examples should be production-ready
-- Include necessary imports and dependencies
-- Document complex logic with inline comments (explain WHY, not WHAT)
-- Provide complete file paths when referencing code
-- Use proper markdown formatting for code blocks
+**Response format:**
+- Production-ready code with imports/dependencies
+- Inline comments explain WHY, not WHAT
+- Include full file paths
+- Proper markdown code blocks
 
 ## Project Overview
 
