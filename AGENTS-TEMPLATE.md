@@ -89,447 +89,50 @@ node_modules/
 
 ## Development Environment
 
-### Web Root Directory
+**Web root**: `web/` (or `docroot/`, `html/` - check for dir with `index.php` and `core/`)
 
-**IMPORTANT**: This template uses `web/` as the default web root directory name, but your project may use a different name:
-
-**Common web root directory names**:
-- `web/` - Default in Drupal Composer template (most common)
-- `docroot/` - Used by some hosting providers and older projects
-- `html/` or `public_html/` - Some shared hosting environments
-- `www/` - Some server configurations
-
-**How to identify your web root**:
+### Setup
 ```bash
-# Check your project structure
-ls -la
-
-# Look for directory containing index.php and core/
-# That's your web root directory
+git clone [REPOSITORY_URL] && cd [PROJECT_DIR]
+ddev start && ddev [BUILD_COMMAND]
 ```
 
-**Throughout this document**:
-- We use `web/` as the default
-- **Replace `web/` with your actual web root directory name** in all commands and paths
-- Examples: If your web root is `docroot/`, change `web/modules/custom/` to `docroot/modules/custom/`
-
-### Setup Commands
-
-```bash
-# Install DDEV (if not installed)
-curl -LO https://raw.githubusercontent.com/drud/ddev/master/scripts/install_ddev.sh && bash install_ddev.sh
-
-# Clone repository
-git clone [REPOSITORY_URL]
-cd [PROJECT_DIR]
-
-# Start DDEV environment
-ddev start
-# [Add project-specific setup commands]
-
-# Build
-ddev [BUILD_COMMAND]
-```
-
-### DDEV Workflow
-
-- **Container Access**: `ddev ssh` to shell into docker container
-- **Local URLs**: [List local URLs]
-- **Project Info**: `ddev describe` shows all services and URLs
+**DDEV**: `ddev ssh` (container), `ddev describe` (info), `ddev drush [cmd]`
 
 ### Custom DDEV Commands
+Location: `.ddev/commands/host/[name]`
+**WARNING**: Don't use `## #ddev-generated` comments - they break command recognition.
 
-Create custom commands in `.ddev/commands/host/` for frequently used operations.
-
-**Creating a Custom Command**:
-
-1. Create file in `.ddev/commands/host/[command-name]`:
-   ```bash
-   #!/bin/bash
-
-   # Description: [Brief description of what command does]
-   # Usage: ddev [command-name]
-
-   # Your command logic here
-   echo "Running custom command..."
-   ```
-
-2. Make it executable:
-   ```bash
-   chmod +x .ddev/commands/host/[command-name]
-   ```
-
-3. Use it:
-   ```bash
-   ddev [command-name]
-   ```
-
-**CRITICAL WARNING**:
-- **Do NOT use special DDEV comments** like `## #ddev-generated` or `## #ddev-description`
-- These special comments prevent DDEV from recognizing the command
-- Use regular bash comments (#) instead
-- DDEV reads the file without these special markers
-
-**Example Custom Command** (`.ddev/commands/host/quick-setup`):
+### Key Drush Commands
 ```bash
-#!/bin/bash
-
-# Quick project setup command
-# Pulls database, imports files, clears cache
-
-echo "Starting quick setup..."
-
-# Pull database from platform
-ddev pull platform -y
-
-# Import configuration
-ddev drush cim -y
-
-# Clear caches
-ddev drush cr
-
-# Get login link
-ddev drush uli
-
-echo "Setup complete!"
+ddev drush status|cr|cex|cim|updb    # Status, cache, config, updates
+ddev drush sql:query "SELECT..."     # DB query
+ddev drush php:eval "code"           # PHP eval
 ```
 
-**Common Custom Commands**:
-- `ddev db-refresh` - Refresh database from production
-- `ddev quick-deploy` - Build and export config
-- `ddev run-tests` - Run test suites
-- `ddev theme-build` - Build theme assets
+<!-- MULTISITE: Use `ddev drush -l [site.ddev.site] [cmd]` -->
 
-### Drush Commands
-
-**Version**: Drush [VERSION]
-
+### Composer
 ```bash
-# Status check
-ddev drush status
-
-# Cache rebuild
-ddev drush cr
-
-# Database query
-ddev drush sql:query "SELECT * FROM node_field_data LIMIT 5;"
-
-# PHP evaluation for quick testing
-ddev drush php:eval "echo 'Hello World';"
-
-# Test service availability
-ddev drush php:eval "var_dump(\Drupal::hasService('entity_type.manager'));"
-
-# Load and inspect entities
-ddev drush php:eval "\$node = \Drupal::entityTypeManager()->getStorage('node')->load(1); var_dump(\$node->getTitle());"
-
-# Check configuration
-ddev drush php:eval "var_dump(\Drupal::config('system.site')->get('name'));"
-
-# Test custom service
-ddev drush php:eval "var_dump(\Drupal::service('custom_module.service_name'));"
-
-# Configuration export/import
-ddev drush cex
-ddev drush cim
-
-# Database updates
-ddev drush updb
+ddev composer outdated 'drupal/*'                    # Check updates
+ddev composer update drupal/[module] --with-deps     # Update module
+ddev composer require drupal/core:X.Y.Z drupal/core-recommended:X.Y.Z --update-with-all-dependencies  # Core update
 ```
 
-<!--
-===========================================
-MULTISITE SECTION (uncomment if needed)
-===========================================
+**Scripts** in `composer.json`: `build`, `deploy`, `test`, `phpcs`, `phpstan`
 
-**Multisite Drush**: Always use `-l [instance]` flag for multisite operations:
-```bash
-# Status check per instance
-ddev drush -l [instance1.ddev.site] status
-ddev drush -l [instance2.ddev.site] status
+### Environment Variables
+Store in `.ddev/.env` (gitignored). Access: `$_ENV['VAR']`. Restart DDEV after changes.
 
-# Cache rebuild per instance
-ddev drush -l [instance] cr
+### Patches
+Structure: `./patches/{core,contrib/[module],custom}/`
 
-# Test all multisite instances
-for site in [instance1] [instance2] [instance3]; do
-  ddev drush -l $site status
-done
-```
--->
-
-### Composer Management
-
-**Drupal Core Updates**:
-```bash
-# Check module compatibility
-ddev composer outdated 'drupal/*'
-
-# Update core packages
-ddev composer require drupal/core:X.Y.Z drupal/core-composer-scaffold:X.Y.Z drupal/core-recommended:X.Y.Z --update-with-all-dependencies
-ddev composer require --dev drupal/core-dev:X.Y.Z
-
-# Run database updates
-ddev drush updb
-
-# Test and check logs
-```
-
-**Module Updates**:
-```bash
-# 1. Update version in composer.json
-# 2. Run update
-ddev composer update drupal/MODULE_NAME --with-dependencies
-```
-
-**Check Outdated Packages**:
-```bash
-ddev composer outdated 'drupal/*'
-```
-
-### Composer Scripts
-
-**Custom Composer Scripts** automate common development tasks. Define in `composer.json` under `scripts` section:
-
+In `composer.json` → `extra.patches`:
 ```json
-{
-  "scripts": {
-    "build": [
-      "@composer install",
-      "@drush cr",
-      "@drush updb -y",
-      "@drush cim -y"
-    ],
-    "deploy": [
-      "@composer install --no-dev --optimize-autoloader",
-      "@drush cr",
-      "@drush updb -y",
-      "@drush cim -y"
-    ],
-    "test": [
-      "@phpcs",
-      "@phpstan",
-      "@phpunit"
-    ],
-    "phpcs": "phpcs --standard=Drupal web/modules/custom",
-    "phpcbf": "phpcbf --standard=Drupal web/modules/custom",
-    "phpstan": "phpstan analyze web/modules/custom --level=1",
-    "phpunit": "phpunit web/modules/custom",
-    "post-install-cmd": [
-      "@drush cr"
-    ],
-    "post-update-cmd": [
-      "@drush cr",
-      "@drush updb -y"
-    ]
-  },
-  "scripts-descriptions": {
-    "build": "Build project for development",
-    "deploy": "Build project for production deployment",
-    "test": "Run all tests and code quality checks",
-    "phpcs": "Check coding standards",
-    "phpcbf": "Fix coding standards automatically",
-    "phpstan": "Run static analysis",
-    "phpunit": "Run PHPUnit tests"
-  }
-}
+"drupal/module": {"#123 Fix": "patches/contrib/module/fix.patch"}
 ```
-
-**Using Composer Scripts**:
-```bash
-# Run build script
-ddev composer build
-
-# Run deployment script
-ddev composer deploy
-
-# Run all tests
-ddev composer test
-
-# Run specific script
-ddev composer phpcs
-
-# Fix coding standards
-ddev composer phpcbf
-```
-
-**Common Script Patterns**:
-- `pre-install-cmd` / `post-install-cmd` - Run before/after `composer install`
-- `pre-update-cmd` / `post-update-cmd` - Run before/after `composer update`
-- `post-autoload-dump` - Run after autoload files are generated
-- Custom scripts - Any command prefixed with `@`
-
-**Best Practices**:
-- Keep scripts simple and focused
-- Use `@` to reference other scripts
-- Add descriptions for all custom scripts
-- Test scripts in all environments
-- Document scripts in project README
-
-### Environment Variables Setup
-
-**Local Development**: Create `.ddev/.env` file for environment-specific variables:
-
-```dotenv
-# Example environment variables
-# API Keys for external services
-EXTERNAL_API_KEY=your_api_key_here
-PAYMENT_GATEWAY_ID=your_gateway_id
-PAYMENT_GATEWAY_SECRET=your_gateway_secret
-
-# Service configurations
-AI_SERVICE_KEY=your_ai_service_key
-THIRD_PARTY_API_TOKEN=your_token
-
-# Platform.sh CLI Token (in ~/.ddev/global_config.yaml instead)
-PLATFORMSH_CLI_TOKEN=your_platform_token
-```
-
-**Important Notes**:
-- Create `.ddev/.env` file and add to `.gitignore`
-- Never commit API keys or secrets to version control
-- Restart DDEV containers after adding/changing variables: `ddev restart`
-- Access in Drupal: `$_ENV['VARIABLE_NAME']` or Settings API
-- Document required variables in project README
-- Store credentials securely (e.g., password manager, Platform.sh environment variables)
-
-**Production/Staging**: Use platform-specific environment variable management (Platform.sh, Acquia, etc.)
-
-### Patch Management
-
-Patches can be applied from various sources: local files, Drupal.org, GitHub, or other URLs.
-
-**Patch Sources**:
-1. **Local patches** - Stored in project repository
-2. **Drupal.org** - Direct links to issue queue patches
-3. **GitHub/GitLab** - Direct links to patch files or commits
-4. **Other URLs** - Any accessible patch file URL
-
-**Directory Structure for Local Patches**:
-- **Core patches**: `./patches/core/`
-- **Contrib patches**: `./patches/contrib/[module_name]/`
-- **Custom patches**: `./patches/custom/`
-
-**Creating Local Patches**:
-
-1. Make changes in the module/core directory
-2. Create patch from git diff:
-   ```bash
-   cd web/modules/contrib/[module_name]
-   git diff > /path/to/project/patches/contrib/[module_name]/patch_name.patch
-   ```
-
-3. Or from specific branch:
-   ```bash
-   git diff BRANCH-NAME path/to/file > ./patches/core/patch_name.patch
-   ```
-
-4. Verify patch file has correct paths (should start with `a/` and `b/`)
-
-**Applying Patches via Composer**:
-
-Add to `composer.json` in the `extra` section:
-```json
-"patches": {
-  "drupal/module_name": {
-    "Local patch - Description": "patches/contrib/module_name/patch_file.patch",
-    "Drupal.org #1234567 - Fix for bug": "https://www.drupal.org/files/issues/2024-01-15/module_name-fix-bug-1234567-2.patch",
-    "GitHub PR #123 - Feature enhancement": "https://patch-diff.githubusercontent.com/raw/user/repo/pull/123.patch"
-  },
-  "drupal/core": {
-    "Local core patch": "patches/core/core_patch.patch",
-    "Drupal.org #3456789 - Core fix": "https://www.drupal.org/files/issues/2024-02-20/core-fix-3456789-15.patch"
-  }
-}
-```
-
-**Common Patch Sources**:
-
-1. **Drupal.org Issue Queue**:
-   ```json
-   "drupal/webform": {
-     "Issue #3123456 - Fix submission handler": "https://www.drupal.org/files/issues/2024-01-15/webform-fix-handler-3123456-10.patch"
-   }
-   ```
-
-2. **GitHub Pull Request**:
-   ```json
-   "drupal/paragraphs": {
-     "GitHub PR #234 - Add new feature": "https://patch-diff.githubusercontent.com/raw/drupal/paragraphs/pull/234.patch"
-   }
-   ```
-
-3. **Local Project Patch**:
-   ```json
-   "drupal/views": {
-     "Custom fix for project-specific issue": "patches/contrib/views/custom-fix.patch"
-   }
-   ```
-
-**Best Practices**:
-- **Include issue numbers** in descriptions when available (e.g., "Issue #1234567")
-- **Document source** - where the patch came from (Drupal.org, GitHub, custom)
-- **Version in filename** - Use patch version if multiple versions exist (e.g., `-10.patch`)
-- **Test thoroughly** - Test patches on clean install before committing
-- **Monitor upstream** - Check if patches have been committed to upstream regularly
-- **Document in commit** - Explain why patch is needed in commit message
-
-**Patch Format Requirements**:
-- Patches must have correct relative paths
-- Drupal.org patches typically work out of the box
-- GitHub patches may need path adjustments
-- Local patches: use `web/modules/contrib/[module_name]/` prefix (or your web root)
-
-**Finding Patches**:
-
-1. **Drupal.org Issue Queue**:
-   - Navigate to module's issue queue
-   - Find issue with patch
-   - Copy link to `.patch` file (not `.patch.txt`)
-   - Use the latest patch version when multiple exist
-
-2. **GitHub**:
-   - For pull requests: `https://patch-diff.githubusercontent.com/raw/[owner]/[repo]/pull/[PR-number].patch`
-   - For commits: `https://github.com/[owner]/[repo]/commit/[commit-hash].patch`
-
-3. **Creating Custom**:
-   - Make changes locally
-   - Generate patch with `git diff`
-   - Store in project's `patches/` directory
-
-**Updating/Removing Patches**:
-```bash
-# Remove patch entry from composer.json
-# Then update the package
-ddev composer update drupal/module_name
-
-# If patch was the only change, may need to reinstall
-ddev composer reinstall drupal/module_name
-
-# Test thoroughly after removing patches
-ddev drush cr
-```
-
-**Troubleshooting Patch Application**:
-
-1. **Patch fails to apply**:
-   - Check if module version matches patch
-   - Try different patch version from issue queue
-   - Patch may already be in newer version (check CHANGELOG)
-
-2. **Hunk failures**:
-   - Code has changed since patch was created
-   - Look for newer patch version
-   - May need to manually apply or create new patch
-
-3. **Path issues**:
-   - Adjust patch paths if needed
-   - Use `patches-file` composer plugin for complex scenarios
-
-**Monitoring Patches**:
-- Regularly check if patches have been committed upstream
-- Update module versions when patches are no longer needed
-- Document patch status in project documentation
+Sources: local files, Drupal.org issue queue, GitHub PRs
+Always include issue numbers in descriptions. Monitor upstream for merged patches.
 
 ## Code Quality Tools
 
