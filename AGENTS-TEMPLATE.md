@@ -248,475 +248,120 @@ ddev drush sql:query "OPTIMIZE TABLE cache_bootstrap, cache_config, cache_data, 
 
 ### Core Principles
 
-- **SOLID**: Follow SOLID principles for object-oriented programming
-- **DRY**: Extract repeated logic into reusable functions, methods, or classes
-- **PHP Version**: PHP 8.1+ with strict typing: `declare(strict_types=1);`
-- **Drupal Standards**: Follow Drupal coding standards (PSR-12 based)
-- **Language**: All code comments and documentation must be in English
+- **SOLID/DRY**: Follow SOLID principles, extract repeated logic
+- **PHP 8.1+**: Use strict typing: `declare(strict_types=1);`
+- **Drupal Standards**: PSR-12 based, English comments only
 
 ### Module Structure
 
-**Custom modules** must be placed in `/web/modules/custom/` and follow this structure (see [Web Root Directory](#web-root-directory) for path variations):
+Location: `/web/modules/custom/[prefix]_[module_name]/`
+Naming: `[prefix]_[descriptive_name]` (e.g., `d_`, `custom_`) - prevents conflicts with contrib
+
 ```
 [prefix]_[module_name]/
-├── [prefix]_[module_name].info.yml      # Module definition
-├── [prefix]_[module_name].module         # Module hooks and functions
-├── [prefix]_[module_name].install        # Install/update hooks
-├── [prefix]_[module_name].routing.yml    # Route definitions
-├── [prefix]_[module_name].permissions.yml # Permission definitions
-├── [prefix]_[module_name].services.yml   # Service definitions
-├── [prefix]_[module_name].libraries.yml  # Asset library definitions
-├── src/                          # PHP classes (PSR-4)
-│   ├── Entity/                   # Entity classes
-│   ├── Form/                     # Form classes
-│   ├── Controller/               # Controller classes
-│   └── Plugin/                   # Plugin implementations
+├── [prefix]_[module_name].{info.yml,module,install,routing.yml,permissions.yml,services.yml,libraries.yml}
+├── src/                          # PSR-4: \Drupal\[module_name]\[Subdir]\ClassName
+│   ├── Entity/                   # Custom entities
+│   ├── Form/                     # Forms (ConfigFormBase, FormBase)
+│   ├── Controller/               # Route controllers
+│   ├── Plugin/{Block,Field/FieldWidget,Field/FieldFormatter}/
+│   ├── Service/                  # Custom services
+│   └── EventSubscriber/          # Event subscribers
 ├── templates/                    # Twig templates
-├── css/                         # Stylesheets
-└── js/                          # JavaScript files
+├── css/ & js/                    # Assets
 ```
 
-**Module Naming**: Follow `[prefix]_[descriptive_name]` pattern (e.g., `myproject_`, `custom_`, `d_`)
-
-**Why use a prefix?**
-- Prevents naming conflicts with contributed modules
-- Groups your custom modules together
-- Makes it clear which modules are custom vs. contrib
-- Recommended: `d_` as default prefix for Droptica projects
-
-**PSR-4 Autoloading**:
-
-Drupal follows PSR-4 autoloading standard for classes in the `src/` directory:
-
-```
-[prefix]_[module_name]/
-├── src/
-│   ├── Entity/              # Namespace: \Drupal\[prefix]_[module_name]\Entity
-│   │   └── CustomEntity.php # Class: \Drupal\[prefix]_[module_name]\Entity\CustomEntity
-│   ├── Form/                # Namespace: \Drupal\[prefix]_[module_name]\Form
-│   │   └── SettingsForm.php # Class: \Drupal\[prefix]_[module_name]\Form\SettingsForm
-│   ├── Controller/          # Namespace: \Drupal\[prefix]_[module_name]\Controller
-│   │   └── PageController.php
-│   ├── Plugin/              # Namespace: \Drupal\[prefix]_[module_name]\Plugin
-│   │   ├── Block/          # \Drupal\[prefix]_[module_name]\Plugin\Block
-│   │   └── Field/
-│   │       └── FieldWidget/
-│   └── Service/             # Custom services
-│       └── CustomService.php
-```
-
-**Namespace Rules**:
-- Base namespace: `Drupal\[module_name]`
-- Subdirectory becomes part of namespace
-- Class name must match filename
-- One class per file
-
-**Example**:
-```php
-<?php
-
-namespace Drupal\my_module\Controller;
-
-use Drupal\Core\Controller\ControllerBase;
-
-class MyController extends ControllerBase {
-  // Controller code
-}
-```
-
-**Directory Purpose**:
-- `Entity/` - Custom entity classes and interfaces
-- `Form/` - Form classes (ConfigFormBase, FormBase)
-- `Controller/` - Page controllers and route controllers
-- `Plugin/` - Plugin implementations (Block, Field, etc.)
-  - `Plugin/Block/` - Custom block plugins
-  - `Plugin/Field/FieldWidget/` - Custom field widgets
-  - `Plugin/Field/FieldFormatter/` - Custom field formatters
-- `Service/` - Custom service classes
-- `EventSubscriber/` - Event subscriber classes
-- `Access/` - Access checkers
-- `Routing/` - Route subscribers
+**PSR-4**: `src/Form/MyForm.php` → `\Drupal\my_module\Form\MyForm`
 
 ### Entity Development Patterns
 
-#### 1. Constants Instead of Magic Numbers
-
 ```php
-// ✅ Good: Define constants in .module file
+// 1. Constants instead of magic numbers (in .module)
 define('ENTITY_STATUS_DRAFT', 0);
 define('ENTITY_STATUS_PUBLISHED', 1);
-define('ENTITY_STATUS_ARCHIVED', 2);
 
-// Use in field definitions
-->setSettings([
-  'allowed_values' => [
-    ENTITY_STATUS_DRAFT => 'Draft',
-    ENTITY_STATUS_PUBLISHED => 'Published',
-    ENTITY_STATUS_ARCHIVED => 'Archived',
-  ],
-])
-
-// Use in business logic
-if ($entity->getStatus() == ENTITY_STATUS_PUBLISHED) {
-  // Handle published entity
-}
-```
-
-#### 2. Getter Methods Instead of Direct Field Access
-
-```php
-// ✅ Good: Create dedicated getter method
-/**
- * Get the entity status.
- *
- * @return int
- *   The status value.
- */
+// 2. Getter methods instead of direct field access
 public function getStatus(): int {
   return (int) $this->get('status')->value;
 }
 
-// Always declare in entity interface
-public function getStatus(): int;
-```
-
-#### 3. Production-Safe Migrations
-
-```php
-// ✅ Good: Safe migration with backward compatibility
+// 3. Safe migrations with backward compatibility
 function [module]_update_XXXX() {
-  $entity_definition_update_manager = \Drupal::entityDefinitionUpdateManager();
-
-  $field_storage_definition = $entity_definition_update_manager
-    ->getFieldStorageDefinition('field_name', 'entity_type');
-
-  if ($field_storage_definition) {
-    $new_definition = BaseFieldDefinition::create('field_type')
-      ->setSettings([
-        'allowed_values' => [
-          CONSTANT_OLD => 'Old Value',
-          CONSTANT_NEW => 'New Value', // New option
-        ],
-      ]);
-
-    $entity_definition_update_manager->updateFieldStorageDefinition($new_definition);
+  $manager = \Drupal::entityDefinitionUpdateManager();
+  $field = $manager->getFieldStorageDefinition('field_name', 'entity_type');
+  if ($field) {
+    $new_def = BaseFieldDefinition::create('field_type')->setSettings([...]);
+    $manager->updateFieldStorageDefinition($new_def);
     drupal_flush_all_caches();
-    \Drupal::logger('module_name')->info('Migration completed successfully.');
+    \Drupal::logger('module')->info('Migration completed.');
   }
 }
-
-// Use >= comparison for backward compatibility
-if ($entity->getFieldValue() >= CONSTANT_MIN_VALUE) {
-  // Works with both old and new values
-}
 ```
 
-**Migration Safety Checklist**:
-- ✅ Backup database before running migrations
-- ✅ Test on staging first
-- ✅ Ensure backward compatibility
-- ✅ Include error handling and logging
-- ✅ Clear caches after schema changes
-- ✅ Have rollback plan
+**Migration safety**: Backup DB, test on staging, ensure backward compatibility, log changes, have rollback plan.
 
 ### Drupal Best Practices
 
-Follow these Drupal-specific patterns for maintainable, secure code.
-
-#### Database API
-
-**Always use database API, never raw SQL**:
-
 ```php
-// ✅ Good: Use database API
+// Database API - always use placeholders, never raw SQL
 $query = \Drupal::database()->select('node_field_data', 'n')
-  ->fields('n', ['nid', 'title'])
-  ->condition('n.status', 1)
-  ->condition('n.type', 'article')
-  ->range(0, 10);
+  ->fields('n', ['nid', 'title'])->condition('status', 1)->range(0, 10);
 $results = $query->execute()->fetchAll();
 
-// ✅ Good: Use placeholders for dynamic values
-$results = \Drupal::database()->query(
-  "SELECT nid, title FROM {node_field_data} WHERE status = :status",
-  [':status' => 1]
-)->fetchAll();
-
-// ❌ Bad: Raw SQL without placeholders (SQL injection risk)
-$results = \Drupal::database()->query(
-  "SELECT nid, title FROM node_field_data WHERE status = " . $status
-);
-```
-
-#### Service Container and Dependency Injection
-
-**Use dependency injection in classes**:
-
-```php
-// ✅ Good: Dependency injection in service
-namespace Drupal\my_module\Service;
-
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Config\ConfigFactoryInterface;
-
+// Dependency Injection - avoid \Drupal:: static calls in classes
 class MyService {
-
   public function __construct(
     private readonly EntityTypeManagerInterface $entityTypeManager,
-    private readonly ConfigFactoryInterface $configFactory,
   ) {}
-
-  public function doSomething() {
-    $storage = $this->entityTypeManager->getStorage('node');
-    // Use $storage
-  }
 }
 
-// ❌ Bad: Using \Drupal static calls in classes
-class MyService {
-  public function doSomething() {
-    $storage = \Drupal::entityTypeManager()->getStorage('node');
-  }
-}
-```
-
-#### Caching API
-
-**Implement proper caching strategies**:
-
-```php
-// ✅ Good: Use cache with tags and contexts
-$cache_tags = ['node:' . $node->id()];
-$cache_contexts = ['user', 'url.path'];
-
+// Caching - use tags and contexts
 $build = [
   '#markup' => $content,
-  '#cache' => [
-    'tags' => $cache_tags,
-    'contexts' => $cache_contexts,
-    'max-age' => 3600,
-  ],
+  '#cache' => ['tags' => ['node:' . $nid], 'contexts' => ['user'], 'max-age' => 3600],
 ];
-
-// Invalidate specific cache tags
-\Drupal\Core\Cache\Cache::invalidateTags(['node:' . $node->id()]);
-
-// Get from cache
-$cid = 'my_module:my_data:' . $key;
-if ($cache = \Drupal::cache()->get($cid)) {
-  return $cache->data;
-}
-
-// Set cache
+\Drupal\Core\Cache\Cache::invalidateTags(['node:' . $nid]);
 \Drupal::cache()->set($cid, $data, time() + 3600, ['my_module']);
 ```
 
-#### Queue API
-
-**Use queues for heavy operations**:
-
 ```php
-// Define queue in [module].services.yml
-// services:
-//   queue.my_module_processor:
-//     class: Drupal\Core\Queue\DatabaseQueue
-//     factory: ['@queue', 'get']
-//     arguments: ['my_module_processor']
-
-// Add item to queue
+// Queue API - for heavy operations
 $queue = \Drupal::queue('my_module_processor');
 $queue->createItem(['data' => $data]);
+// QueueWorker plugin: @QueueWorker(id="...", cron={"time"=60})
 
-// Process queue in QueueWorker plugin
-/**
- * @QueueWorker(
- *   id = "my_module_processor",
- *   title = @Translation("My Module Processor"),
- *   cron = {"time" = 60}
- * )
- */
-class MyModuleProcessor extends QueueWorkerBase {
-  public function processItem($data) {
-    // Process item
-  }
-}
-```
-
-#### Entity System
-
-**Use entity API properly**:
-
-```php
-// ✅ Good: Use entity type manager
-$node_storage = \Drupal::entityTypeManager()->getStorage('node');
-
-// Load entity
-$node = $node_storage->load($nid);
-
-// Load multiple entities
-$nodes = $node_storage->loadMultiple([1, 2, 3]);
-
-// Query entities
-$query = $node_storage->getQuery()
-  ->condition('type', 'article')
-  ->condition('status', 1)
-  ->accessCheck(TRUE)  // Always include access check
-  ->sort('created', 'DESC')
-  ->range(0, 10);
+// Entity System - always use entity type manager
+$storage = \Drupal::entityTypeManager()->getStorage('node');
+$node = $storage->load($nid);
+$query = $storage->getQuery()
+  ->condition('type', 'article')->condition('status', 1)
+  ->accessCheck(TRUE)->sort('created', 'DESC')->range(0, 10);
 $nids = $query->execute();
 
-// Create entity
-$node = $node_storage->create([
-  'type' => 'article',
-  'title' => 'My Title',
-  'field_my_field' => 'value',
-]);
-$node->save();
+// Form API - extend FormBase, implement getFormId(), buildForm(), validateForm(), submitForm()
+$form['field'] = ['#type' => 'textfield', '#title' => $this->t('Name'), '#required' => TRUE];
+$form_state->setErrorByName('field', $this->t('Error message.'));
+
+// Translation - always use t() for user-facing strings
+$this->t('Hello @name', ['@name' => $name]);
+
+// Config API
+$config = \Drupal::config('my_module.settings')->get('key');
+\Drupal::configFactory()->getEditable('my_module.settings')->set('key', $value)->save();
+
+// Permissions
+user_role_grant_permissions($role_id, ['permission']);
+user_role_revoke_permissions($role_id, ['permission']);
 ```
-
-#### Form API
-
-**Build forms with proper validation**:
-
-```php
-namespace Drupal\my_module\Form;
-
-use Drupal\Core\Form\FormBase;
-use Drupal\Core\Form\FormStateInterface;
-
-class MyForm extends FormBase {
-
-  public function getFormId() {
-    return 'my_module_my_form';
-  }
-
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    $form['name'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Name'),
-      '#required' => TRUE,
-    ];
-
-    $form['email'] = [
-      '#type' => 'email',
-      '#title' => $this->t('Email'),
-      '#required' => TRUE,
-    ];
-
-    $form['submit'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Submit'),
-    ];
-
-    return $form;
-  }
-
-  public function validateForm(array &$form, FormStateInterface $form_state) {
-    $email = $form_state->getValue('email');
-    if (!\Drupal::service('email.validator')->isValid($email)) {
-      $form_state->setErrorByName('email', $this->t('Invalid email address.'));
-    }
-  }
-
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    $values = $form_state->getValues();
-    // Process form submission
-    \Drupal::messenger()->addStatus($this->t('Form submitted successfully.'));
-  }
-}
-```
-
-#### Translation API
-
-**Make all user-facing strings translatable**:
-
-```php
-// ✅ Good: Use t() or TranslatableMarkup
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-
-$message = $this->t('Hello @name', ['@name' => $name]);
-
-// For complex strings
-$markup = new TranslatableMarkup('Welcome to @site', [
-  '@site' => $site_name,
-]);
-
-// In render arrays
-$build['message'] = [
-  '#markup' => $this->t('Welcome!'),
-];
-
-// ❌ Bad: Hardcoded English strings
-$message = "Hello " . $name;
-```
-
-#### Configuration Management
-
-**Use configuration API for settings**:
-
-```php
-// Get configuration
-$config = \Drupal::config('my_module.settings');
-$value = $config->get('my_setting');
-
-// Set configuration (editable)
-$config = \Drupal::configFactory()->getEditable('my_module.settings');
-$config->set('my_setting', $value);
-$config->save();
-
-// In services with dependency injection
-public function __construct(ConfigFactoryInterface $config_factory) {
-  $this->config = $config_factory->get('my_module.settings');
-}
-```
-
-### Form Development
-
-- Use Drupal's Form API states system for conditional fields
-- Implement proper form validation
-- Follow Drupal's form building patterns
-- Use field groups for organizing form elements
-- Implement proper access checks for form operations
-
-### Logging Standards
-
-- Implement comprehensive logging for debugging
-- Use Drupal's logger service: `\Drupal::logger('module_name')->notice()`
-- Log important actions and state changes
-- Include relevant data in log messages for debugging
 
 ### Code Style
 
-- **Type Declarations**: Always use explicit return type declarations
-- **Type Hints**: Use appropriate PHP type hints for method parameters
-- **PHPDoc**: Provide complete documentation for classes, methods, properties
-- **Array Alignment**: Always align `=>` in multi-line array declarations
-- **Variable Alignment**: Always align `=` in sequential variable definitions
-- **Controllers**: Should be final classes, use dependency injection, keep thin
-- **Services**: Register in `services.yml`, keep focused on single responsibility
-
-### Entity Updates
-
-- All entity structure changes must include update hooks in module `.install` file
-- Follow Drupal's update hook system
-- Maintain backward compatibility
-
-### Role Permissions Management
-
-```php
-// Grant permissions
-user_role_grant_permissions($role_id, [$permission_array]);
-
-// Revoke permissions
-user_role_revoke_permissions($role_id, [$permission_array]);
-
-// Check permissions
-user_role_permissions($role_id);
-
-// Common roles: [list project-specific roles]
-// Built-in roles: Use constants like AccountInterface::AUTHENTICATED_ROLE for authenticated users
-// Always include drupal_flush_all_caches() after permission changes
-```
+- Type declarations/hints required, PHPDoc for classes/methods
+- Align `=>` in arrays, `=` in variable definitions
+- Controllers: final classes, DI, keep thin
+- Services: register in `services.yml`, single responsibility
+- Logging: `\Drupal::logger('module')->notice('message')`
+- Entity updates: always use update hooks in `.install`, maintain backward compatibility
 
 ## Directory Structure
 
