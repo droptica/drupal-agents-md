@@ -268,9 +268,11 @@ Naming: `[prefix]_[descriptive_name]` (e.g., `d_`, `custom_`) - prevents conflic
 ### Entity Development Patterns
 
 ```php
-// 1. Constants instead of magic numbers (in .module)
-define('ENTITY_STATUS_DRAFT', 0);
-define('ENTITY_STATUS_PUBLISHED', 1);
+// 1. Enums instead of magic numbers
+enum EntityStatus: string {
+  case Draft = 0;
+  case Published = 1;
+}
 
 // 2. Getter methods instead of direct field access
 public function getStatus(): int {
